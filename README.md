@@ -4,10 +4,9 @@ C# Library for reading video game archives.
 ## Supported Archive Formats
 ### Ark
 This format is used in many Harmonix games, including but not limited to:
-* Guitar Hero 1 - 2
-* Guitar Hero Encore: Rocks the 80s
+* Guitar Hero 1 - 2, Encore: Rocks the 80s
 * Rock Band 1 - 3, Lego, Green Day, Beatles
-
+* Karaoke Revolution (thhough this hasn't been tested)
 Versions 3 through 6 are supported at this time.
 
 ### STFS
