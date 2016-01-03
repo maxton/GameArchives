@@ -263,8 +263,8 @@ namespace GameArchives.Ark
         path = ".";
       }
       string[] breadcrumbs = path.Split('/');
-      ArkDirectory last = root;
-      ArkDirectory current;
+      IDirectory last = root;
+      IDirectory current;
       if(breadcrumbs[0] == "." && breadcrumbs.Length == 1)
       {
         return root;
@@ -272,15 +272,14 @@ namespace GameArchives.Ark
 
       for (var idx = 0; idx < breadcrumbs.Length; idx++)
       {
-        current = (ArkDirectory)last.GetDirectory(breadcrumbs[idx]);
-        if (current == null)
+        if (!last.TryGetDirectory(breadcrumbs[idx], out current))
         {
           current = new ArkDirectory(last, breadcrumbs[idx]);
-          last.AddDir(current);
+          (last as ArkDirectory).AddDir(current as ArkDirectory);
         }
         last = current;
       }
-      return last;
+      return last as ArkDirectory;
     }
 
     #region IDisposable Support

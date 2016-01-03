@@ -64,6 +64,20 @@ namespace GameArchives.STFS
       return Name;
     }
 
+    public bool TryGetFile(string name, out IFile file)
+    {
+      foreach (var f in Files)
+      {
+        if (f.Name == name)
+        {
+          file = f;
+          return true;
+        }
+      }
+      file = null;
+      return false;
+    }
+
     /// <summary>
     /// Gets the file of the given name. Throws System.IO.FileNotFoundException
     /// if it can't be found.
@@ -72,12 +86,24 @@ namespace GameArchives.STFS
     /// <returns></returns>
     public IFile GetFile(string name)
     {
-      foreach (var file in Files)
-      {
-        if (file.Name == name)
-          return file;
-      }
+      IFile ret;
+      if (TryGetFile(name, out ret))
+        return ret;
       throw new System.IO.FileNotFoundException("Unable to find the file " + name);
+    }
+
+    public bool TryGetDirectory(string name, out IDirectory dir)
+    {
+      foreach (var d in Dirs)
+      {
+        if (d.Name == name)
+        {
+          dir = d;
+          return true;
+        }
+      }
+      dir = null;
+      return false;
     }
 
     /// <summary>
@@ -88,11 +114,9 @@ namespace GameArchives.STFS
     /// <returns></returns>
     public IDirectory GetDirectory(string name)
     {
-      foreach (var dir in Dirs)
-      {
-        if (dir.Name == name)
-          return dir;
-      }
+      IDirectory ret;
+      if(TryGetDirectory(name, out ret))
+        return ret;
       throw new System.IO.DirectoryNotFoundException("Unable to find the directory " + name);
     }
   }

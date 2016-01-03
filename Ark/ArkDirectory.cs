@@ -33,22 +33,30 @@ namespace GameArchives.Ark
     public ICollection<IDirectory> Dirs => dirs.Values;
     public ICollection<IFile> Files => files.Values;
 
+    public bool TryGetDirectory(string name, out IDirectory dir)
+    {
+      return dirs.TryGetValue(name, out dir);
+    }
+
     public IDirectory GetDirectory(string name)
     {
       IDirectory ret;
-      if(dirs.TryGetValue(name, out ret))
+      if(TryGetDirectory(name, out ret))
         return ret;
-      else
-        throw new System.IO.DirectoryNotFoundException("Unable to find the directory " + name);
+      throw new System.IO.DirectoryNotFoundException("Unable to find the directory " + name);
+    }
+
+    public bool TryGetFile(string name, out IFile file)
+    {
+      return files.TryGetValue(name, out file);
     }
 
     public IFile GetFile(string name)
     {
       IFile ret;
-      if(files.TryGetValue(name, out ret))
+      if(TryGetFile(name, out ret))
         return ret;
-      else
-        throw new System.IO.FileNotFoundException("Unable to find the file " + name);
+      throw new System.IO.FileNotFoundException("Unable to find the file " + name);
     }
 
     internal void AddFile(ArkFile f)

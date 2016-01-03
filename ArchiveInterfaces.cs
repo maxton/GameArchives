@@ -69,12 +69,28 @@ namespace GameArchives
   public interface IDirectory : IFSNode
   {
     /// <summary>
+    /// Tries to get the named file. If it is not found, returns false.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    bool TryGetFile(string name, out IFile file);
+
+    /// <summary>
     /// Get the file in this directory with the given name. Throws exception if not found.
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
     /// <exception cref="FileNotFoundException">Thrown when the file could not be found.</exception>  
     IFile GetFile(string name);
+
+    /// <summary>
+    /// Tries to get the named directory. If it is not found, returns false.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="dir"></param>
+    /// <returns></returns>
+    bool TryGetDirectory(string name, out IDirectory dir);
 
     /// <summary>
     /// Get the directory in this directory with the given name. Throws exception if not found.
