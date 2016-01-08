@@ -215,7 +215,7 @@ namespace GameArchives.STFS
       stream.Position = 0x571A;
       TitleThumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(titleThumbnailImgSize)));
 
-      root = new STFSDirectory("", null);
+      root = new STFSDirectory("/", null);
       var dirsOrdinal = new Dictionary<int, STFSDirectory>();
       dirsOrdinal.Add(-1, root);
       int items = 0;

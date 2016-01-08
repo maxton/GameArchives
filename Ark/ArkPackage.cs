@@ -219,7 +219,7 @@ namespace GameArchives.Ark
       // by the path string each file has, which tells you in which folder
       // the file lives.
       uint numFiles = (uint)header.ReadInt32LE();
-      root = new ArkDirectory(null, ".");
+      root = new ArkDirectory(null, "/");
       for (var i = 0; i < numFiles; i++)
       {
         // Version 3 uses 32-bit file offsets

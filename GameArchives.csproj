@@ -48,6 +48,11 @@
     <Compile Include="Ark\ArkFile.cs" />
     <Compile Include="Ark\ArkPackage.cs" />
     <Compile Include="Ark\DtbCryptStream.cs" />
+    <Compile Include="Common\DefaultDirectory.cs" />
+    <Compile Include="Common\OffsetStream.cs" />
+    <Compile Include="FSAR\FSARDirectory.cs" />
+    <Compile Include="FSAR\FSARFile.cs" />
+    <Compile Include="FSAR\FSARPackage.cs" />
     <Compile Include="STFS\STFSDirectory.cs" />
     <Compile Include="STFS\STFSFile.cs" />
     <Compile Include="STFS\STFSPackage.cs" />

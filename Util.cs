@@ -65,8 +65,11 @@ namespace GameArchives
     /// <param name="path"></param>
     public static void ExtractTo(this IFile file, string path)
     {
-      if (File.Exists(path)) File.Delete(path);
-      File.WriteAllBytes(path, file.GetBytes());
+      using (FileStream fs = new FileStream(path, FileMode.Create))
+      using (Stream s = file.GetStream())
+      { 
+        s.CopyTo(fs);
+      }
     }
   }
 }

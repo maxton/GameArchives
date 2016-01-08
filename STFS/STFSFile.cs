@@ -26,20 +26,16 @@ namespace GameArchives.STFS
   /// </summary>
   class STFSFile : IFile
   {
-    /// <summary>
-    /// The name of this file.
-    /// </summary>
     public string Name { get; }
 
-    /// <summary>
-    /// The size, in bytes, of this file.
-    /// </summary>
-    public uint Size { get; }
-
-    /// <summary>
-    /// The directory in which this file resides.
-    /// </summary>
     public IDirectory Parent { get; }
+
+    public ulong Size { get; }
+
+    public bool Compressed => false;
+
+    public ulong CompressedSize => Size;
+
 
     STFSPackage container;
     int[] dataBlocks;
@@ -96,7 +92,7 @@ namespace GameArchives.STFS
       {
         dataBlocks = container.GetFileBlocks(startBlock, numBlocks, false);
       }
-      return new STFSFileStream(container, dataBlocks, Size);
+      return new STFSFileStream(container, dataBlocks, (uint)Size);
     }
   }
 
@@ -120,7 +116,7 @@ namespace GameArchives.STFS
     /// <summary>
     /// Denotes whether the stream can be read from.
     /// </summary>
-    public override bool CanRead => position < Length;
+    public override bool CanRead => true;
 
     /// <summary>
     /// Denotes whether the user can seek this stream.
@@ -225,7 +221,7 @@ namespace GameArchives.STFS
           Position = Position + offset;
           break;
         case System.IO.SeekOrigin.End:
-          Position = Length - offset;
+          Position = Length + offset;
           break;
       }
       return Position;

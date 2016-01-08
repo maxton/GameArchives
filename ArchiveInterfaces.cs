@@ -46,10 +46,20 @@ namespace GameArchives
   public interface IFile : IFSNode
   {
     /// <summary>
-    /// The size of this file. Current limit is 4GB (uint), may be increased in the future.
+    /// The size of this file.
     /// </summary>
-    uint Size { get; }
+    ulong Size { get; }
 
+    /// <summary>
+    /// Indicates whether this file is compressed in the archive.
+    /// </summary>
+    bool Compressed { get; }
+
+    /// <summary>
+    /// The size of this file, as it is in the archive.
+    /// </summary>
+    ulong CompressedSize { get; }
+    
     /// <summary>
     /// Get a byte-array in memory containing all the data of this file.
     /// </summary>

@@ -1,5 +1,5 @@
 ﻿/*
- * ArkDirectory.cs
+ * FSARDirectory.cs
  * 
  * Copyright (c) 2015,2016, maxton. All rights reserved.
  *
@@ -19,11 +19,11 @@
  */
 using GameArchives.Common;
 
-namespace GameArchives.Ark
+namespace GameArchives.FSAR
 {
-  class ArkDirectory : DefaultDirectory
+  class FSARDirectory : DefaultDirectory
   {
-    public ArkDirectory(IDirectory parent, string name) : base(parent, name)
+    public FSARDirectory(IDirectory parent, string name) : base(parent, name)
     {
 
     }

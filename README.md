@@ -10,6 +10,11 @@ This format is used in many Harmonix games, including but not limited to:
 
 Versions 3 through 6 are supported at this time.
 
+### FSAR / .far
+This format is used in some FreeStyleGames games, including:
+* DJ Hero
+* Guitar Hero Live
+
 ### STFS
 This includes the CON and LIVE formats, used for game saves and downloadable
 content (among other things) on the Xbox 360. Since documentation on the format

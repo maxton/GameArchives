@@ -1,5 +1,5 @@
 ﻿/*
- * ArkFile.cs
+ * FSARFile.cs
  * 
  * Copyright (c) 2015,2016, maxton. All rights reserved.
  *
@@ -20,53 +20,57 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.IO.Compression;
+using GameArchives.Common;
 
-namespace GameArchives.Ark
+namespace GameArchives.FSAR
 {
-  public class ArkFile : IFile
+  class FSARFile : IFile
   {
     public string Name { get; }
-
     public IDirectory Parent { get; }
-
     public ulong Size { get; }
+    public bool Compressed { get; }
+    public ulong CompressedSize { get; }
 
-    public bool Compressed => false;
-    public ulong CompressedSize => Size;
+    private long offset;
+    private Stream archive;
 
-    /// <summary>
-    /// The offset of this file relative to its .ark file
-    /// </summary>
-    private uint offset;
-
-    /// <summary>
-    /// The .ark file in which this file resides.
-    /// </summary>
-    private Stream ark;
-
-    internal ArkFile(Stream ark, uint offset, uint size, string name, ArkDirectory parent)
+    public FSARFile(string n, IDirectory p, ulong size, bool compressed,
+                    ulong zsize, ulong offset, Stream archive)
     {
-      Parent = parent;
+      Name = n;
+      Parent = p;
       Size = size;
-      Name = name;
-      this.offset = offset;
-      this.ark = ark;
+      Compressed = compressed;
+      CompressedSize = zsize;
+      this.offset = (long)offset;
+      this.archive = archive;
     }
 
     public byte[] GetBytes()
     {
-      byte[] bytes;
+      byte[] bytes = new byte[Size];
+      if(Size > Int32.MaxValue)
+      {
+        throw new NotSupportedException("Can't read bytes for file larger than int32 max, yet.");
+      }
       using (var stream = this.GetStream())
       {
-        bytes = stream.ReadBytes((int)Size);
+        stream.Read(bytes, 0, (int)Size);
       }
       return bytes;
     }
 
     public Stream GetStream()
     {
-      return new Common.OffsetStream(ark, offset, (long)Size);
+      if (!Compressed)
+        return new OffsetStream(archive, offset, (long)Size);
+      else
+        return new DeflateStream(new OffsetStream(archive, offset + 2, (long)CompressedSize - 2),
+                                 CompressionMode.Decompress);
     }
   }
 }
