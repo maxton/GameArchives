@@ -43,6 +43,7 @@ namespace GameArchives.FSGIMG
 
     public FSGIMGPackage(string filename)
     {
+      FileName = filename;
       filestream = new FileStream(filename, FileMode.Open);
       if(filestream.ReadASCIINullTerminated() != "FSG-FILE-SYSTEM")
       {
