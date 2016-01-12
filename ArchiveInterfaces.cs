@@ -141,6 +141,9 @@ namespace GameArchives
     /// </summary>
     public abstract void Dispose();
 
+    public const char PATH_SEPARATOR = '/';
+    public const string ROOT_DIR = "/";
+
     /// <summary>
     /// Get the file at the given path. Path separator is '/'.
     /// Files in the root directory have no path separator.

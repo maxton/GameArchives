@@ -41,7 +41,7 @@ namespace GameArchives.FSAR
     public FSARPackage(string path)
     {
       FileName = path;
-      root = new FSARDirectory(null, "/");
+      root = new FSARDirectory(null, ROOT_DIR);
       filestream = new FileStream(path, FileMode.Open);
       uint magic = filestream.ReadUInt32BE();
       if(magic == 0x46534743) // "FSGC"

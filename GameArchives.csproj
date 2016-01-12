@@ -53,6 +53,9 @@
     <Compile Include="FSAR\FSARDirectory.cs" />
     <Compile Include="FSAR\FSARFile.cs" />
     <Compile Include="FSAR\FSARPackage.cs" />
+    <Compile Include="FSGIMG\FSGIMGDirectory.cs" />
+    <Compile Include="FSGIMG\FSGIMGFile.cs" />
+    <Compile Include="FSGIMG\FSGIMGPackage.cs" />
     <Compile Include="STFS\STFSDirectory.cs" />
     <Compile Include="STFS\STFSFile.cs" />
     <Compile Include="STFS\STFSPackage.cs" />

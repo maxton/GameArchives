@@ -7,7 +7,7 @@ using System.Text;
 using System.IO;
 namespace GameArchives
 {
-  static class StreamExtensions
+  internal static class StreamExtensions
   {
     /// <summary>
     /// Read a signed 8-bit integer from the stream.
@@ -115,7 +115,7 @@ namespace GameArchives
     /// </summary>
     /// <param name="s"></param>
     /// <returns></returns>
-    public static int ReadUInt24BE(this Stream s)
+    public static uint ReadUInt24BE(this Stream s)
     {
       int ret;
       byte[] tmp = new byte[3];
@@ -123,7 +123,7 @@ namespace GameArchives
       ret = tmp[2] & 0x0000FF;
       ret |= (tmp[1] << 8) & 0x00FF00;
       ret |= (tmp[0] << 16) & 0xFF0000;
-      return ret;
+      return (uint)ret;
     }
 
     /// <summary>
