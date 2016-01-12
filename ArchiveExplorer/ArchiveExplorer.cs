@@ -79,22 +79,7 @@ namespace ArchiveExplorer
       try
       {
         UnloadPackage();
-        if (Util.IsSTFS(file))
-        {
-          currentPackage = GameArchives.STFS.STFSPackage.Open(file);
-        }
-        else if (Path.GetExtension(file).ToLower() == ".hdr")
-        {
-          currentPackage = new GameArchives.Ark.ArkPackage(file);
-        }
-        else if (Path.GetExtension(file).ToLower() == ".far")
-        {
-          currentPackage = new GameArchives.FSAR.FSARPackage(file);
-        }
-        else if (Path.GetExtension(file).ToLower() == ".img")
-        {
-          currentPackage = new GameArchives.FSGIMG.FSGIMGPackage(file);
-        }
+        currentPackage = PackageReader.ReadPackageFromFile(file);
         if (currentPackage != null)
         {
           Text = Application.ProductName + " - " + currentPackage.FileName;
