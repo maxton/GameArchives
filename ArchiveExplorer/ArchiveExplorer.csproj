@@ -90,10 +90,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="File_large.png" />
-    <Content Include="File_small.png" />
-    <Content Include="Folder_large.png" />
-    <Content Include="Folder_small.png" />
+    <Content Include="Images\File_large.png" />
+    <Content Include="Images\File_small.png" />
+    <Content Include="Images\Folder_large.png" />
+    <Content Include="Images\Folder_small.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
