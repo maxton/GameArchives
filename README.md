@@ -1,5 +1,5 @@
 ﻿# GameArchives
-C# Library for reading video game archives.
+C# Library for reading video game archives, and example file browser.
 
 ## Supported Archive Formats
 ### Ark (*.hdr)
