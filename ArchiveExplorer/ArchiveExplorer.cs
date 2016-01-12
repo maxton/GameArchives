@@ -40,7 +40,14 @@ namespace ArchiveExplorer
     public ArchiveExplorer()
     {
       InitializeComponent();
-
+      string[] args = Environment.GetCommandLineArgs();
+      if (args.Length > 1)
+      {
+        if(File.Exists(args[1]))
+        {
+          LoadFile(args[1]);
+        }
+      }
     }
 
     private string HumanReadableFileSize(ulong size)
@@ -61,7 +68,7 @@ namespace ArchiveExplorer
       {
         return size.ToString() + " B";
       }
-    } 
+    }
 
     /// <summary>
     /// Deal with a new file.
@@ -69,29 +76,36 @@ namespace ArchiveExplorer
     /// <param name="file"></param>
     private void LoadFile(string file)
     {
-      UnloadPackage();
-      if (Util.IsSTFS(file))
+      try
       {
-        currentPackage = GameArchives.STFS.STFSPackage.Open(file);
+        UnloadPackage();
+        if (Util.IsSTFS(file))
+        {
+          currentPackage = GameArchives.STFS.STFSPackage.Open(file);
+        }
+        else if (Path.GetExtension(file).ToLower() == ".hdr")
+        {
+          currentPackage = new GameArchives.Ark.ArkPackage(file);
+        }
+        else if (Path.GetExtension(file).ToLower() == ".far")
+        {
+          currentPackage = new GameArchives.FSAR.FSARPackage(file);
+        }
+        else if (Path.GetExtension(file).ToLower() == ".img")
+        {
+          currentPackage = new GameArchives.FSGIMG.FSGIMGPackage(file);
+        }
+        if (currentPackage != null)
+        {
+          Text = Application.ProductName + " - " + currentPackage.FileName;
+          currentDirectory = currentPackage.RootDirectory;
+          ResetBreadcrumbs();
+          FillFileView();
+        }
       }
-      else if (Path.GetExtension(file).ToLower() == ".hdr")
+      catch (Exception ex)
       {
-        currentPackage = new GameArchives.Ark.ArkPackage(file);
-      }
-      else if(Path.GetExtension(file).ToLower() == ".far")
-      {
-        currentPackage = new GameArchives.FSAR.FSARPackage(file);
-      }
-      else if(Path.GetExtension(file).ToLower() == ".img")
-      {
-        currentPackage = new GameArchives.FSGIMG.FSGIMGPackage(file);
-      }
-      if(currentPackage != null)
-      {
-        Text = Application.ProductName + " - " + currentPackage.FileName;
-        currentDirectory = currentPackage.RootDirectory;
-        ResetBreadcrumbs();
-        FillFileView();
+        MessageBox.Show("Could not load archive!" + Environment.NewLine + ex.Message, "Error");
       }
     }//LoadFile
     
@@ -173,13 +187,7 @@ namespace ArchiveExplorer
       of.Filter += "|FSAR Package (*.far)|*.far";
       if (of.ShowDialog() == DialogResult.OK)
       {
-        try {
-          LoadFile(of.FileName);
-        }
-        catch(Exception ex)
-        {
-          MessageBox.Show("Could not load archive!"+Environment.NewLine+ex.Message, "Error");
-        }
+        LoadFile(of.FileName);
       }
     }
 
