@@ -46,7 +46,7 @@
       this.typeColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
       this.sizeColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
       this.fileViewContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-      this.extractFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      this.extractSelectedItems = new System.Windows.Forms.ToolStripMenuItem();
       this.largeImageList = new System.Windows.Forms.ImageList(this.components);
       this.smallImageList = new System.Windows.Forms.ImageList(this.components);
       this.menuStrip1.SuspendLayout();
@@ -77,21 +77,21 @@
       // openToolStripMenuItem
       // 
       this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-      this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+      this.openToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
       this.openToolStripMenuItem.Text = "Open...";
       this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
       // 
       // closeToolStripMenuItem
       // 
       this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-      this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+      this.closeToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
       this.closeToolStripMenuItem.Text = "Close";
       this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
       // 
       // exitToolStripMenuItem
       // 
       this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-      this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+      this.exitToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
       this.exitToolStripMenuItem.Text = "Exit";
       this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
       // 
@@ -189,16 +189,16 @@
       // fileViewContextMenu
       // 
       this.fileViewContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.extractFilesToolStripMenuItem});
+            this.extractSelectedItems});
       this.fileViewContextMenu.Name = "fileViewContextMenu";
-      this.fileViewContextMenu.Size = new System.Drawing.Size(189, 26);
+      this.fileViewContextMenu.Size = new System.Drawing.Size(197, 26);
       // 
-      // extractFilesToolStripMenuItem
+      // extractSelectedItems
       // 
-      this.extractFilesToolStripMenuItem.Name = "extractFilesToolStripMenuItem";
-      this.extractFilesToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-      this.extractFilesToolStripMenuItem.Text = "Extract selected files...";
-      this.extractFilesToolStripMenuItem.Click += new System.EventHandler(this.extractFilesToolStripMenuItem_Click);
+      this.extractSelectedItems.Name = "extractSelectedItems";
+      this.extractSelectedItems.Size = new System.Drawing.Size(196, 22);
+      this.extractSelectedItems.Text = "Extract selected items...";
+      this.extractSelectedItems.Click += new System.EventHandler(this.extractItemsToolStripMenuItem_Click);
       // 
       // largeImageList
       // 
@@ -254,7 +254,7 @@
     private System.Windows.Forms.ImageList largeImageList;
     private System.Windows.Forms.ColumnHeader sizeColumn;
     private System.Windows.Forms.ContextMenuStrip fileViewContextMenu;
-    private System.Windows.Forms.ToolStripMenuItem extractFilesToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem extractSelectedItems;
   }
 }
 

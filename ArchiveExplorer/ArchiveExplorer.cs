@@ -162,6 +162,31 @@ namespace ArchiveExplorer
       PerformLayout();
     }
 
+    private void ExtractDir(IDirectory dir, string path)
+    {
+      foreach(IFile f in dir.Files)
+      {
+        f.ExtractTo(Path.Combine(path, SafeName(f.Name)));
+      }
+      foreach(IDirectory d in dir.Dirs)
+      {
+        string newPath = Path.Combine(path, SafeName(d.Name));
+        Directory.CreateDirectory(newPath);
+        ExtractDir(d, newPath);
+      }
+    }
+
+    private string SafeName(string name)
+    {
+      name = name.Replace("\\", "").Replace("/", "").Replace(":", "").Replace("*", "")
+        .Replace("?", "").Replace("\"", "").Replace("<", "").Replace(">", "").Replace("|", "");
+      if(name == ".." || name == ".")
+      {
+        name = "(" + name + ")";
+      }
+      return name;
+    }
+
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
     {
       var of = new OpenFileDialog();
@@ -220,7 +245,7 @@ namespace ArchiveExplorer
       }
     }
 
-    private void extractFilesToolStripMenuItem_Click(object sender, EventArgs e)
+    private void extractItemsToolStripMenuItem_Click(object sender, EventArgs e)
     {
       var fb = new FolderSelectDialog();
       if(fb.ShowDialog())
@@ -228,8 +253,15 @@ namespace ArchiveExplorer
         foreach(ListViewItem i in fileView.SelectedItems)
         {
           if (i.Tag is IDirectory)
-            continue;
-          (i.Tag as IFile).ExtractTo(Path.Combine(fb.FileName, (i.Tag as IFile).Name));
+          {
+            string newPath = Path.Combine(fb.FileName, SafeName((i.Tag as IDirectory).Name));
+            Directory.CreateDirectory(newPath);
+            ExtractDir((i.Tag as IDirectory), newPath);
+          }
+          else
+          {
+            (i.Tag as IFile).ExtractTo(Path.Combine(fb.FileName, (i.Tag as IFile).Name));
+          }
         }
       }
     }
