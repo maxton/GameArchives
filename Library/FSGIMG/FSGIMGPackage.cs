@@ -17,6 +17,7 @@
  * License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
+using GameArchives.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +29,7 @@ namespace GameArchives.FSGIMG
     public override string FileName { get; }
 
     public override IDirectory RootDirectory => root;
+    public override bool Writeable => false;
 
     private Stream filestream;
     private FSGIMGDirectory root;
@@ -44,11 +46,25 @@ namespace GameArchives.FSGIMG
     public FSGIMGPackage(string filename)
     {
       FileName = filename;
-      filestream = new FileStream(filename, FileMode.Open);
-      if(filestream.ReadASCIINullTerminated() != "FSG-FILE-SYSTEM")
+      var parts = new List<Stream>(1);
+      parts.Add(new FileStream(filename, FileMode.Open));
+      if (filename.Split('.').Length > 2) // this is a .part* file
+      {
+        int partNum = 1;
+        while (File.Exists(filename.Substring(0, filename.Length - 1) + partNum))
+        {
+          var fs = new FileStream(filename.Substring(0, filename.Length - 1) + partNum, FileMode.Open);
+          parts.Add(fs);
+          partNum++;
+        }
+      }
+      filestream = new MultiStream(parts);
+
+      if (filestream.ReadASCIINullTerminated() != "FSG-FILE-SYSTEM")
       {
         throw new InvalidDataException("FSG-FILE-SYSTEM header not found.");
       }
+      
       filestream.ReadUInt32BE(); // unknown, == 2
       uint header_length = filestream.ReadUInt32BE();
       uint num_sectors = filestream.ReadUInt32BE();

@@ -38,14 +38,14 @@ namespace GameArchives.Ark
     /// <summary>
     /// The offset of this file relative to its .ark file
     /// </summary>
-    private uint offset;
+    private long offset;
 
     /// <summary>
     /// The .ark file in which this file resides.
     /// </summary>
     private Stream ark;
 
-    internal ArkFile(Stream ark, uint offset, uint size, string name, ArkDirectory parent)
+    internal ArkFile(Stream ark, long offset, uint size, string name, ArkDirectory parent)
     {
       Parent = parent;
       Size = size;

@@ -17,6 +17,7 @@
  * License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
+using GameArchives.Common;
 using System;
 using System.IO;
 
@@ -88,12 +89,13 @@ namespace GameArchives.Ark
   {
     private ArkDirectory root;
     private Stream[] contentFiles;
+    private MultiStream contentFileMeta;
     private ulong[] arkFileSizes;
     private ulong totalArkFileSizes;
 
     public override string FileName { get; }
     public override IDirectory RootDirectory => root;
-
+    public override bool Writeable => false;
 
     /// <summary>
     /// Instantiate ark package file from input .hdr file.
@@ -178,6 +180,8 @@ namespace GameArchives.Ark
         }
       }
 
+      contentFileMeta = new MultiStream(contentFiles);
+
       // All versions: read file tables.
       uint fileNameTableSize = (uint)header.ReadInt32LE();
 
@@ -223,7 +227,7 @@ namespace GameArchives.Ark
       for (var i = 0; i < numFiles; i++)
       {
         // Version 3 uses 32-bit file offsets
-        ulong arkFileOffset = (version == 3 ? (ulong)(header.ReadInt32LE() & 0xFFFFFFFF) : (ulong)header.ReadInt64LE());
+        long arkFileOffset = (version == 3 ? (header.ReadInt32LE() & 0xFFFFFFFF) : header.ReadInt64LE());
         int filenameStringId = header.ReadInt32LE();
         int dirStringId = header.ReadInt32LE();
         uint size = (uint)header.ReadInt32LE();
@@ -231,23 +235,9 @@ namespace GameArchives.Ark
         if (zero == 0)
         {
           ArkDirectory parent = makeOrGetDir(fileNames[dirStringId]);
-          var fileAndOffset = offsetToStream(arkFileOffset);
-          parent.AddFile(new ArkFile(fileAndOffset.Item1, (uint)fileAndOffset.Item2, size, fileNames[filenameStringId], parent));
+          parent.AddFile(new ArkFile(contentFileMeta, arkFileOffset, size, fileNames[filenameStringId], parent));
         }
       }
-    }
-
-    private Tuple<Stream,ulong> offsetToStream(ulong offset)
-    {
-      for (var i = 0; i < arkFileSizes.Length; i++)
-      {
-        if(arkFileSizes[i] > offset)
-        {
-          return new Tuple<Stream, ulong>(contentFiles[i],offset);
-        }
-        offset -= arkFileSizes[i];
-      }
-      throw new ArgumentOutOfRangeException("Desired offset extends past final ark file.");
     }
 
     /// <summary>
