@@ -111,6 +111,15 @@ namespace GameArchives
     IDirectory GetDirectory(string name);
 
     /// <summary>
+    /// Tries to get the file at the given path, which is relative to this directory.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    /// <exception cref="DirectoryNotFoundException">Thrown when a directory in the path could not be found.</exception>
+    /// <exception cref="FileNotFoundException">Thrown when the file could not be found.</exception>
+    IFile GetFileAtPath(string path);
+
+    /// <summary>
     /// A collection of all files in this directory.
     /// </summary>
     ICollection<IFile> Files { get; }
@@ -137,11 +146,23 @@ namespace GameArchives
     public abstract IDirectory RootDirectory { get; }
 
     /// <summary>
+    /// Indicates whether this package can be modified.
+    /// </summary>
+    public abstract bool Writeable { get; }
+
+    /// <summary>
     /// Implementation of the IDisposable interface.
     /// </summary>
     public abstract void Dispose();
 
+    /// <summary>
+    /// Separates elements in a file path.
+    /// </summary>
     public const char PATH_SEPARATOR = '/';
+
+    /// <summary>
+    /// The name of the root directory. Never used in paths, though.
+    /// </summary>
     public const string ROOT_DIR = "/";
 
     /// <summary>
@@ -150,19 +171,6 @@ namespace GameArchives
     /// </summary>
     /// <param name="path"></param>
     /// <returns>The file at the given path.</returns>
-    /// <exception cref="DirectoryNotFoundException">Thrown when a directory in the path could not be found.</exception>
-    /// <exception cref="FileNotFoundException">Thrown when the file could not be found.</exception>
-    public IFile GetFile(string path)
-    {
-      string[] breadcrumbs = path.Split('/');
-      int idx = 0;
-      IDirectory current = RootDirectory;
-      while (idx < breadcrumbs.Length - 1)
-      {
-        current = current?.GetDirectory(breadcrumbs[idx++]);
-      }
-      IFile f = current?.GetFile(breadcrumbs[idx]);
-      return f;
-    }
+    public IFile GetFile(string path) => RootDirectory.GetFileAtPath(path);
   }
 }

@@ -17,6 +17,7 @@
  * License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
+using GameArchives.Common;
 using System;
 using System.Collections.Generic;
 
@@ -25,99 +26,9 @@ namespace GameArchives.STFS
   /// <summary>
   /// Represents a Directory within an STFS package.
   /// </summary>
-  class STFSDirectory : IDirectory
+  class STFSDirectory : DefaultDirectory
   {
-    /// <summary>
-    /// The files that this Directory contains.
-    /// </summary>
-    public ICollection<IFile> Files { get; }
-
-    /// <summary>
-    /// The directories in this Directory.
-    /// </summary>
-    public ICollection<IDirectory> Dirs { get; }
-
-    /// <summary>
-    /// The directory where this Directory resides.
-    /// </summary>
-    public IDirectory Parent { get; }
-
-    /// <summary>
-    /// The name of this directory.
-    /// </summary>
-    public string Name { get; }
-
-    internal STFSDirectory(string name, STFSDirectory parent)
-    {
-      Name = name;
-      Files = new List<IFile>();
-      Dirs = new List<IDirectory>();
-      Parent = parent;
-    }
-
-    /// <summary>
-    /// The name of this directory.
-    /// </summary>
-    /// <returns></returns>
-    public override string ToString()
-    {
-      return Name;
-    }
-
-    public bool TryGetFile(string name, out IFile file)
-    {
-      foreach (var f in Files)
-      {
-        if (f.Name == name)
-        {
-          file = f;
-          return true;
-        }
-      }
-      file = null;
-      return false;
-    }
-
-    /// <summary>
-    /// Gets the file of the given name. Throws System.IO.FileNotFoundException
-    /// if it can't be found.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public IFile GetFile(string name)
-    {
-      IFile ret;
-      if (TryGetFile(name, out ret))
-        return ret;
-      throw new System.IO.FileNotFoundException("Unable to find the file " + name);
-    }
-
-    public bool TryGetDirectory(string name, out IDirectory dir)
-    {
-      foreach (var d in Dirs)
-      {
-        if (d.Name == name)
-        {
-          dir = d;
-          return true;
-        }
-      }
-      dir = null;
-      return false;
-    }
-
-    /// <summary>
-    /// Gets the directory of the given name. Throws System.IO.DirectoryNotFoundException
-    /// if it can't be found.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public IDirectory GetDirectory(string name)
-    {
-      IDirectory ret;
-      if(TryGetDirectory(name, out ret))
-        return ret;
-      throw new System.IO.DirectoryNotFoundException("Unable to find the directory " + name);
-    }
+    public STFSDirectory(IDirectory parent, string name) : base(parent, name)
+    { }
   }
 }

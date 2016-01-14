@@ -63,6 +63,19 @@ namespace GameArchives.Common
       throw new System.IO.FileNotFoundException("Unable to find the file " + name);
     }
 
+    public IFile GetFileAtPath(string path)
+    {
+      if (path[0] == AbstractPackage.PATH_SEPARATOR)
+        path = path.Substring(1);
+      string[] breadcrumbs = path.Split('/');
+      if(breadcrumbs.Length == 1)
+      {
+        return GetFile(breadcrumbs[0]);
+      }
+      string newPath = string.Join(AbstractPackage.PATH_SEPARATOR.ToString(), breadcrumbs, 1, breadcrumbs.Length);
+      return GetDirectory(breadcrumbs[0]).GetFileAtPath(newPath);
+    }
+
     internal void AddFile(IFile f)
     {
       if (!files.ContainsKey(f.Name))

@@ -31,6 +31,8 @@ namespace GameArchives.FSAR
 
     public override IDirectory RootDirectory => root;
 
+    public override bool Writeable => false;
+
     private Stream filestream;
     private FSARDirectory root;
 
@@ -101,7 +103,8 @@ namespace GameArchives.FSAR
 
     public override void Dispose()
     {
-      throw new NotImplementedException();
+      filestream.Close();
+      filestream.Dispose();
     }
   }
 }

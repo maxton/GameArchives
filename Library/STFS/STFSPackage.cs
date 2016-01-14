@@ -94,6 +94,8 @@ namespace GameArchives.STFS
     /// </summary>
     public override IDirectory RootDirectory => root;
 
+    public override bool Writeable => false;
+
     /// <summary>
     /// The total size of this STFS package.
     /// </summary>
@@ -215,7 +217,7 @@ namespace GameArchives.STFS
       stream.Position = 0x571A;
       TitleThumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(titleThumbnailImgSize)));
 
-      root = new STFSDirectory("/", null);
+      root = new STFSDirectory(null, ROOT_DIR);
       var dirsOrdinal = new Dictionary<int, STFSDirectory>();
       dirsOrdinal.Add(-1, root);
       int items = 0;
@@ -259,7 +261,7 @@ namespace GameArchives.STFS
             if ((flags & 0x80) == 0x80)
             {
               // item is a directory
-              var tmp = new STFSDirectory(name, parent);
+              var tmp = new STFSDirectory(parent, name);
               dirsOrdinal.Add(items, tmp);
               parent.Dirs.Add(tmp);
             }
