@@ -191,10 +191,7 @@ namespace ArchiveExplorer
     {
       var of = new OpenFileDialog();
       of.Title = "Select package to open.";
-      of.Filter += "All Files (*.*)|*.*";
-      of.Filter += "|STFS Package (*.*)|*.*";
-      of.Filter += "|Ark Package (*.hdr)|*.hdr";
-      of.Filter += "|FSAR Package (*.far)|*.far";
+      of.Filter += "All Files (*.*)|*.*|" + PackageReader.SupportedFormats;
       if (of.ShowDialog() == DialogResult.OK)
       {
         LoadFile(of.FileName);
