@@ -1,5 +1,5 @@
 ﻿# GameArchives
-C# Library for reading video game archives, and example file browser.
+C# Library for reading video game archives, and example file browser ("ArchiveExplorer").
 
 ## Supported Archive Formats
 ### Ark (*.hdr)
@@ -16,9 +16,9 @@ This format is used in some FreeStyleGames games, including:
 * DJ Hero 2
 * Guitar Hero Live
 
-#### Note
+#### Notes
 Usually, these are on disc as DISC0.img.part0, DISC0.img.part1.
-`copy /b DISC0.img.part0 + DISC0.img.part1 DISC0.img` to combine.
+The library will handle these files in addition to the combined DISC0.img.
 
 ### FSAR (*.far)
 This format is used in some FreeStyleGames games, including:
