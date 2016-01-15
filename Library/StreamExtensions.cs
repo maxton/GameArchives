@@ -269,13 +269,15 @@ namespace GameArchives
     /// </summary>
     /// <param name="s"></param>
     /// <returns></returns>
-    public static string ReadASCIINullTerminated(this Stream s)
+    public static string ReadASCIINullTerminated(this Stream s, int limit = -1)
     {
       StringBuilder sb = new StringBuilder(255);
       char cur;
       while ((cur = (char)s.ReadByte()) != 0)
       {
         sb.Append(cur);
+        if (limit != -1 && sb.Length > limit)
+          break;
       }
       return sb.ToString();
     }

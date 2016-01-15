@@ -97,6 +97,37 @@ namespace GameArchives.Ark
     public override IDirectory RootDirectory => root;
     public override bool Writeable => false;
 
+    public static bool IsArk(string fn)
+    {
+      using (FileStream fs = new FileStream(fn, FileMode.Open))
+        return IsArk(fs);
+    }
+
+    public static bool IsArk(Stream s)
+    {
+      s.Position = 0;
+      uint version = (uint)s.ReadInt32LE();
+      if (version > 6)
+      {
+        // hdr is encrypted, probably
+        using (var decryptor = new HdrCryptStream(s))
+        {
+          version = (uint)decryptor.ReadInt32LE();
+        }
+      }
+      return version <= 6 && version >= 3;
+    }
+
+    public static ArkPackage FromPath(string filename)
+    {
+      return new ArkPackage(filename);
+    }
+
+    public static ArkPackage FromStream(Stream fs)
+    {
+      throw new NotSupportedException("Can't read ark packages from a stream.");
+    }
+
     /// <summary>
     /// Instantiate ark package file from input .hdr file.
     /// Note: will check for data files and throw exception if they're not found.

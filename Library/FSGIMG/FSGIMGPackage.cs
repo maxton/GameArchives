@@ -26,6 +26,21 @@ namespace GameArchives.FSGIMG
 {
   public class FSGIMGPackage : AbstractPackage
   {
+    public static bool IsFSGIMG(Stream s)
+    {
+      s.Position = 0;
+      return s.ReadASCIINullTerminated(16) == "FSG-FILE-SYSTEM";
+    }
+    public static bool IsFSGIMG(string path)
+    {
+      using (FileStream fs = File.OpenRead(path))
+        return IsFSGIMG(fs);
+    }
+    public static FSGIMGPackage OpenFile(string path)
+    {
+      return new FSGIMGPackage(path);
+    }
+
     public override string FileName { get; }
 
     public override IDirectory RootDirectory => root;
@@ -60,7 +75,7 @@ namespace GameArchives.FSGIMG
       }
       filestream = new MultiStream(parts);
 
-      if (filestream.ReadASCIINullTerminated() != "FSG-FILE-SYSTEM")
+      if (filestream.ReadASCIINullTerminated(16) != "FSG-FILE-SYSTEM")
       {
         throw new InvalidDataException("FSG-FILE-SYSTEM header not found.");
       }

@@ -34,12 +34,15 @@ namespace ArchiveExplorer
 {
   public partial class ArchiveExplorer : Form
   {
-    private IDirectory currentDirectory;
-    private AbstractPackage currentPackage;
+    private PackageManager pm;
 
     public ArchiveExplorer()
     {
       InitializeComponent();
+      pm = PackageManager.GetInstance();
+      pm.Spinner = this.spinnerLabel;
+      pm.StatusLabel = this.toolStripStatusLabel1;
+      pm.SetReady();
       string[] args = Environment.GetCommandLineArgs();
       if (args.Length > 1)
       {
@@ -50,141 +53,41 @@ namespace ArchiveExplorer
       }
     }
 
-    private string HumanReadableFileSize(ulong size)
-    {
-      if(size > (1024 * 1024 * 1024))
-      {
-        return (size / (double)(1024 * 1024 * 1024)).ToString("F") + " GiB";
-      }
-      else if(size > (1024 * 1024))
-      {
-        return (size / (double)(1024 * 1024)).ToString("F") + " MiB";
-      }
-      else if (size > 1024)
-      {
-        return (size / 1024.0).ToString("F") + " KiB";
-      }
-      else
-      {
-        return size.ToString() + " B";
-      }
-    }
-
     /// <summary>
     /// Deal with a new file.
     /// </summary>
     /// <param name="file"></param>
-    private void LoadFile(string file)
+    private async void LoadFile(string file)
     {
+      var newPage = new TabPage();
+      newPage.Text = "Loading...";
+      tabControl1.Controls.Add(newPage);
       try
       {
-        UnloadPackage();
-        currentPackage = PackageReader.ReadPackageFromFile(file);
-        if (currentPackage != null)
-        {
-          Text = Application.ProductName + " - " + currentPackage.FileName;
-          currentDirectory = currentPackage.RootDirectory;
-          ResetBreadcrumbs();
-          FillFileView();
-        }
+        var newPackage = await Task.Run(() => PackageReader.ReadPackageFromFile(file));
+        var packageView = new PackageView(newPackage);
+        newPage.Text = newPackage.FileName;
+        newPage.Controls.Add(packageView);
+        packageView.Tag = newPage;
+        packageView.SetView(view);
+        packageView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+        packageView.Dock = System.Windows.Forms.DockStyle.Fill;
+        packageView.Location = new System.Drawing.Point(3, 3);
+        packageView.Margin = new System.Windows.Forms.Padding(0);
+        packageView.Name = "packageView";
+        packageView.TabIndex = 0;
+        tabControl1.SelectedTab = newPage;
       }
       catch (Exception ex)
       {
+        tabControl1.Controls.Remove(newPage);
         MessageBox.Show("Could not load archive!" + Environment.NewLine + ex.Message, "Error");
       }
     }//LoadFile
-    
-    private void SetCurrentDir(IDirectory dir)
-    {
-      currentDirectory = dir;
-      FillFileView();
-      ResetBreadcrumbs();
-    }
 
-    private void UnloadPackage()
+    public void RemoveTab(TabPage p)
     {
-      Text = Application.ProductName;
-      currentPackage?.Dispose();
-      currentPackage = null;
-      currentDirectory = null;
-      FillFileView();
-      ResetBreadcrumbs();
-    }
-
-    private void FillFileView()
-    {
-      fileView.Items.Clear();
-      if (currentDirectory != null)
-      {
-        foreach (var dir in currentDirectory.Dirs)
-        {
-          var item = new ListViewItem(new string[] { dir.Name, "Directory" });
-          item.Tag = dir;
-          item.ImageIndex = 0;
-          fileView.Items.Add(item);
-        }
-        foreach (var file in currentDirectory.Files)
-        {
-          var item = new ListViewItem(new string[] { file.Name, "File", HumanReadableFileSize(file.Size) });
-          item.Tag = file;
-          item.ImageIndex = 1;
-          fileView.Items.Add(item);
-        }
-      }
-    }
-
-    private void ResetBreadcrumbs()
-    {
-      var dir = currentDirectory;
-      var i = 1;
-      var breadcrumbs = new List<Button>();
-      flowLayoutPanel1.Controls.Clear();
-      while (dir != null)
-      {
-        var button = new Button();
-        breadcrumbs.Insert(0, button);
-        button.AutoSize = true;
-        button.Margin = new System.Windows.Forms.Padding(0);
-        button.Name = $"breadcrumb{i}";
-        button.Size = new System.Drawing.Size(3, 23);
-        button.TabIndex = i;
-        button.Text = dir.Name;
-        button.UseVisualStyleBackColor = true;
-        button.Tag = dir;
-        button.Click += (x, y) => SetCurrentDir(button.Tag as IDirectory);
-        dir = dir.Parent;
-      }
-      foreach (var btn in breadcrumbs)
-      {
-        flowLayoutPanel1.Controls.Add(btn);
-      }
-      flowLayoutPanel1.PerformLayout();
-      PerformLayout();
-    }
-
-    private void ExtractDir(IDirectory dir, string path)
-    {
-      foreach(IFile f in dir.Files)
-      {
-        f.ExtractTo(Path.Combine(path, SafeName(f.Name)));
-      }
-      foreach(IDirectory d in dir.Dirs)
-      {
-        string newPath = Path.Combine(path, SafeName(d.Name));
-        Directory.CreateDirectory(newPath);
-        ExtractDir(d, newPath);
-      }
-    }
-
-    private string SafeName(string name)
-    {
-      name = name.Replace("\\", "").Replace("/", "").Replace(":", "").Replace("*", "")
-        .Replace("?", "").Replace("\"", "").Replace("<", "").Replace(">", "").Replace("|", "");
-      if(name == ".." || name == ".")
-      {
-        name = "(" + name + ")";
-      }
-      return name;
+      tabControl1.Controls.Remove(p);
     }
 
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -205,7 +108,7 @@ namespace ArchiveExplorer
         detailsToolStripMenuItem.Checked = true;
         iconsToolStripMenuItem.Checked = false;
         listToolStripMenuItem.Checked = false;
-        fileView.View = View.Details;
+        SetView(View.Details);
       }
     }
 
@@ -216,7 +119,7 @@ namespace ArchiveExplorer
         detailsToolStripMenuItem.Checked = false;
         iconsToolStripMenuItem.Checked = true;
         listToolStripMenuItem.Checked = false;
-        fileView.View = View.LargeIcon;
+        SetView(View.LargeIcon);
       }
     }
 
@@ -227,39 +130,18 @@ namespace ArchiveExplorer
         detailsToolStripMenuItem.Checked = false;
         iconsToolStripMenuItem.Checked = false;
         listToolStripMenuItem.Checked = true;
-        fileView.View = View.List;
+        SetView(View.List);
       }
     }
 
-    private void fileView_DoubleClick(object sender, EventArgs e)
+    private View view = View.Details;
+    private void SetView(View v)
     {
-      if(fileView.SelectedItems.Count == 1)
+      view = v;
+      foreach(TabPage t in tabControl1.TabPages)
       {
-        if(fileView.SelectedItems[0].Tag is IDirectory)
-        {
-          SetCurrentDir(fileView.SelectedItems[0].Tag as IDirectory);
-        }
-      }
-    }
-
-    private void extractItemsToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-      var fb = new FolderSelectDialog();
-      if(fb.ShowDialog())
-      {
-        foreach(ListViewItem i in fileView.SelectedItems)
-        {
-          if (i.Tag is IDirectory)
-          {
-            string newPath = Path.Combine(fb.FileName, SafeName((i.Tag as IDirectory).Name));
-            Directory.CreateDirectory(newPath);
-            ExtractDir((i.Tag as IDirectory), newPath);
-          }
-          else
-          {
-            (i.Tag as IFile).ExtractTo(Path.Combine(fb.FileName, (i.Tag as IFile).Name));
-          }
-        }
+        if(t.Controls.Count > 0)
+          (t.Controls[0] as PackageView)?.SetView(v);
       }
     }
 
@@ -270,7 +152,18 @@ namespace ArchiveExplorer
 
     private void closeToolStripMenuItem_Click(object sender, EventArgs e)
     {
-      UnloadPackage();
+      (tabControl1.SelectedTab?.Controls[0] as PackageView)?.Unload();
+    }
+
+    private void tabControl1_Click(object sender, MouseEventArgs e)
+    {
+      var ctrl = sender as TabControl;
+      if (e.Button == MouseButtons.Middle)
+      {
+        (ctrl.TabPages.Cast<TabPage>()
+          .Where((t, i) => ctrl.GetTabRect(i).Contains(e.Location))
+          .First().Controls[0] as PackageView).Unload();
+      }
     }
   }
 }

@@ -17,22 +17,12 @@ namespace GameArchives
     /// <exception cref="NotSupportedException">Thrown when an unsupported file type is given.</exception>
     public static AbstractPackage ReadPackageFromFile(string file)
     {
-      string ext = Path.GetExtension(file).ToLower();
-      if (Util.IsSTFS(file))
+      foreach(PackageType t in PackageType.Types)
       {
-        return STFS.STFSPackage.Open(file);
-      }
-      else if (ext == ".hdr")
-      {
-        return new Ark.ArkPackage(file);
-      }
-      else if (ext == ".far")
-      {
-        return new FSAR.FSARPackage(file);
-      }
-      else if (ext == ".img" || ext == ".part0" || ext == ".part000")
-      {
-        return new FSGIMG.FSGIMGPackage(file);
+        if(t.CheckPath(file))
+        {
+          return t.Load(file);
+        }
       }
       throw new NotSupportedException("Given file was not a supported archive format.");
     }
@@ -41,10 +31,20 @@ namespace GameArchives
     /// A list of supported file formats and their extensions, presented
     /// in a format that an OpenFileDialog supports.
     /// </summary>
-    public static string SupportedFormats =>
-      "Ark Package (*.hdr)|*.hdr" +
-      "|STFS Package (*.*)|*.*" +
-      "|FSAR Package (*.far)|*.far" +
-      "|FSG-FILE-SYSTEM (*.img;*.img.part0;*.img.part000)|*.img;*.img.part0;*.img.part000";
+    public static string SupportedFormats
+    {
+      get
+      {
+        StringBuilder sb = new StringBuilder();
+        bool first = true;
+        foreach (PackageType t in PackageType.Types)
+        {
+          if (!first) sb.Append("|");
+          sb.AppendFormat("{0} ({1})|{1}", t.Name, string.Join(";",t.Extensions));
+          if (first) first = false;
+        }
+        return sb.ToString();
+      }
+    }
   }
 }

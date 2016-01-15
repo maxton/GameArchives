@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
+using System.IO;
 
 namespace GameArchives.STFS
 {
@@ -80,9 +81,38 @@ namespace GameArchives.STFS
   public class STFSPackage : AbstractPackage
   {
     /// <summary>
+    /// Checks if the given file is an STFS file (LIVE/CON).
+    /// </summary>
+    /// <param name="filename">Absolute path to file.</param>
+    /// <returns>Is the file an STFS?</returns>
+    public static bool IsSTFS(string filename)
+    {
+      using (FileStream fs = File.OpenRead(filename))
+      {
+        return IsSTFS(fs);
+      }
+    }
+
+    /// <summary>
+    /// Checks if the given stream is an STFS file (LIVE/CON).
+    /// </summary>
+    /// <param name="fs">Stream pointing to the data to be tested.</param>
+    /// <returns>Is it an STFS?</returns>
+    public static bool IsSTFS(Stream fs)
+    {
+      if (!fs.CanSeek && fs.Position != 0)
+        throw new Exception("Must be able to seek to the beginning the given stream.");
+      fs.Seek(0, SeekOrigin.Begin);
+      byte[] magic = new byte[4];
+      fs.Read(magic, 0, 4);
+      return (magic[0] == 'C' && magic[1] == 'O' && magic[2] == 'N' && magic[3] == ' ') ||
+             (magic[0] == 'L' && magic[1] == 'I' && magic[2] == 'V' && magic[3] == 'E');
+    }
+
+    /// <summary>
     /// The stream used to access this STFS package. Typically, this is a FileStream.
     /// </summary>
-    public System.IO.Stream stream { get; }
+    public Stream stream { get; }
 
     /// <summary>
     /// The type of this STFS package (LIVE and CON are supported).
@@ -175,7 +205,7 @@ namespace GameArchives.STFS
 
     private STFSPackage(System.IO.Stream input)
     {
-      if (!Util.IsSTFS(input))
+      if (!IsSTFS(input))
       {
         throw new System.IO.InvalidDataException("Given file is not a valid STFS archive.");
       }

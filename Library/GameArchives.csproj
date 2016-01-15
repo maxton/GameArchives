@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GameArchives</RootNamespace>
     <AssemblyName>GameArchives</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -49,6 +49,7 @@
     <Compile Include="Ark\ArkPackage.cs" />
     <Compile Include="Ark\DtbCryptStream.cs" />
     <Compile Include="Common\DefaultDirectory.cs" />
+    <Compile Include="Common\MultiStream.cs" />
     <Compile Include="Common\OffsetStream.cs" />
     <Compile Include="PackageReader.cs" />
     <Compile Include="FSAR\FSARDirectory.cs" />
@@ -57,12 +58,16 @@
     <Compile Include="FSGIMG\FSGIMGDirectory.cs" />
     <Compile Include="FSGIMG\FSGIMGFile.cs" />
     <Compile Include="FSGIMG\FSGIMGPackage.cs" />
+    <Compile Include="PackageTypes.cs" />
     <Compile Include="STFS\STFSDirectory.cs" />
     <Compile Include="STFS\STFSFile.cs" />
     <Compile Include="STFS\STFSPackage.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XISO\XISODirectory.cs" />
+    <Compile Include="XISO\XISOFile.cs" />
+    <Compile Include="XISO\XISOPackage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GameArchives.licenseheader" />

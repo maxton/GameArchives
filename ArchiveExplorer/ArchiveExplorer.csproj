@@ -53,11 +53,21 @@
       <DependentUpon>ArchiveExplorer.cs</DependentUpon>
     </Compile>
     <Compile Include="FolderSelectDialog.cs" />
+    <Compile Include="PackageManager.cs" />
+    <Compile Include="PackageView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PackageView.Designer.cs">
+      <DependentUpon>PackageView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflector.cs" />
     <EmbeddedResource Include="ArchiveExplorer.resx">
       <DependentUpon>ArchiveExplorer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PackageView.resx">
+      <DependentUpon>PackageView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -90,6 +100,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\spinner.gif" />
     <Content Include="Images\File_large.png" />
     <Content Include="Images\File_small.png" />
     <Content Include="Images\Folder_large.png" />

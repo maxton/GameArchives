@@ -27,6 +27,23 @@ namespace GameArchives.FSAR
 {
   public class FSARPackage : AbstractPackage
   {
+    public static bool IsFSAR(string fn)
+    {
+      using (FileStream fs = File.OpenRead(fn))
+        return IsFSAR(fs);
+    }
+
+    public static bool IsFSAR(Stream s)
+    {
+      s.Position = 0;
+      return s.ReadUInt32BE() == 0x46534152;
+    }
+
+    public static FSARPackage FromFile(string fn)
+    {
+      return new FSARPackage(fn);
+    }
+
     public override string FileName { get; }
 
     public override IDirectory RootDirectory => root;
