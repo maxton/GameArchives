@@ -14,6 +14,7 @@ namespace GameArchives
     /// </summary>
     /// <param name="file"></param>
     /// <returns></returns>
+    /// <exception cref="NotSupportedException">Thrown when an unsupported file type is given.</exception>
     public static AbstractPackage ReadPackageFromFile(string file)
     {
       string ext = Path.GetExtension(file).ToLower();
@@ -33,7 +34,7 @@ namespace GameArchives
       {
         return new FSGIMG.FSGIMGPackage(file);
       }
-      throw new Exception("Given file was not a supported archive format.");
+      throw new NotSupportedException("Given file was not a supported archive format.");
     }
 
     /// <summary>

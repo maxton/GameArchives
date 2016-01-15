@@ -263,7 +263,7 @@ namespace GameArchives.STFS
               // item is a directory
               var tmp = new STFSDirectory(parent, name);
               dirsOrdinal.Add(items, tmp);
-              parent.Dirs.Add(tmp);
+              parent.AddDir(tmp);
             }
             else
             {
@@ -278,7 +278,7 @@ namespace GameArchives.STFS
               {
                 tmp = new STFSFile(name, size, startBlock, numBlocks, parent, this);
               }
-              parent.Files.Add(tmp);
+              parent.AddFile(tmp);
             }
             items++;
           }
