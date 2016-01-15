@@ -13,7 +13,7 @@ Versions 3 through 6 are supported at this time.
 
 ### FSG-FILE-SYSTEM (DISC0.img)
 This format is used in some FreeStyleGames games, including:
-* DJ Hero 2 (maybe 1?)
+* DJ Hero 2
 * Guitar Hero Live
 
 #### Note
@@ -22,7 +22,7 @@ Usually, these are on disc as DISC0.img.part0, DISC0.img.part1.
 
 ### FSAR (*.far)
 This format is used in some FreeStyleGames games, including:
-* DJ Hero 2 (maybe 1?)
+* DJ Hero 1,2
 * Guitar Hero Live
 
 This format may use compression.
