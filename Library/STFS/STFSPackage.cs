@@ -281,7 +281,7 @@ namespace GameArchives.STFS
             curBlockStream.ReadInt24LE();
             int startBlock = curBlockStream.ReadInt24LE();
             int parentDir = curBlockStream.ReadInt16BE();
-            uint size = (uint)curBlockStream.ReadInt32BE();
+            uint size = curBlockStream.ReadUInt32BE();
             int update = curBlockStream.ReadInt32BE();
             int access = curBlockStream.ReadInt32BE();
             STFSDirectory parent;

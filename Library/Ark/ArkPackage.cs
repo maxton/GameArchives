@@ -90,8 +90,8 @@ namespace GameArchives.Ark
     private ArkDirectory root;
     private Stream[] contentFiles;
     private MultiStream contentFileMeta;
-    private ulong[] arkFileSizes;
-    private ulong totalArkFileSizes;
+    private long[] arkFileSizes;
+    private long totalArkFileSizes;
 
     public override string FileName { get; }
     public override IDirectory RootDirectory => root;
@@ -106,13 +106,13 @@ namespace GameArchives.Ark
     public static bool IsArk(Stream s)
     {
       s.Position = 0;
-      uint version = (uint)s.ReadInt32LE();
+      uint version = s.ReadUInt32LE();
       if (version > 6)
       {
         // hdr is encrypted, probably
         using (var decryptor = new HdrCryptStream(s))
         {
-          version = (uint)decryptor.ReadInt32LE();
+          version = decryptor.ReadUInt32LE();
         }
       }
       return version <= 6 && version >= 3;
@@ -139,7 +139,7 @@ namespace GameArchives.Ark
       using (var hdr = new FileStream(pathToHdr, FileMode.Open, FileAccess.Read))
       {
         Stream actualHdr = hdr;
-        uint version = (uint)hdr.ReadInt32LE();
+        uint version = hdr.ReadUInt32LE();
         if(version > 6)
         {
           // hdr is encrypted, probably
@@ -149,7 +149,7 @@ namespace GameArchives.Ark
             decryptor.Read(arr, 0, (int)decryptor.Length);
             actualHdr = new MemoryStream(arr);
           }
-          version = (uint)actualHdr.ReadInt32LE();
+          version = actualHdr.ReadUInt32LE();
         }
         readHeader(actualHdr, pathToHdr, version);
       }
@@ -169,11 +169,11 @@ namespace GameArchives.Ark
       {
         throw new Exception("Ark header appears to be invalid (.ark count mismatch).");
       }
-      arkFileSizes = new ulong[numArks];
+      arkFileSizes = new long[numArks];
       for (var i = 0; i < numArks; i++)
       {
         // All versions except 4 use 32-bit file sizes.
-        arkFileSizes[i] = (ulong)(version == 4 ? header.ReadInt64LE() : header.ReadInt32LE());
+        arkFileSizes[i] = (version == 4 ? header.ReadInt64LE() : header.ReadInt32LE());
         totalArkFileSizes += arkFileSizes[i];
       }
 
@@ -196,7 +196,7 @@ namespace GameArchives.Ark
         // Version 6: appears to checksums or something for each content file
         if (version == 6) 
         { 
-          uint numChecksums = (uint)header.ReadInt32LE();
+          uint numChecksums = header.ReadUInt32LE();
           header.Seek(4 * numChecksums, SeekOrigin.Current);
         }
       }
@@ -214,7 +214,7 @@ namespace GameArchives.Ark
       contentFileMeta = new MultiStream(contentFiles);
 
       // All versions: read file tables.
-      uint fileNameTableSize = (uint)header.ReadInt32LE();
+      uint fileNameTableSize = header.ReadUInt32LE();
 
       // Save position of filename table for later.
       long tableOffset = header.Position;
@@ -224,7 +224,7 @@ namespace GameArchives.Ark
       // Rather than read all filenames with their offsets, we read all the
       // offsets first, then read the filenames. This saves a lot of seeking
       // back-and-forth within the header.
-      uint numFileNames = (uint)header.ReadInt32LE();
+      uint numFileNames = header.ReadUInt32LE();
       if (numFileNames > fileNameTableSize)
       {
         throw new Exception("Ark header appears to be invalid (number of filenames exceeds filename table size).");
@@ -253,16 +253,16 @@ namespace GameArchives.Ark
       // Directories are not explicitly stored. Rather, they are inferred
       // by the path string each file has, which tells you in which folder
       // the file lives.
-      uint numFiles = (uint)header.ReadInt32LE();
+      uint numFiles = header.ReadUInt32LE();
       root = new ArkDirectory(null, ROOT_DIR);
       for (var i = 0; i < numFiles; i++)
       {
         // Version 3 uses 32-bit file offsets
-        long arkFileOffset = (version == 3 ? (header.ReadInt32LE() & 0xFFFFFFFF) : header.ReadInt64LE());
+        long arkFileOffset = (version == 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
         int filenameStringId = header.ReadInt32LE();
-        int dirStringId = header.ReadInt32LE();
-        uint size = (uint)header.ReadInt32LE();
-        uint zero = (uint)header.ReadInt32LE();
+        uint dirStringId = header.ReadUInt32LE();
+        uint size = header.ReadUInt32LE();
+        uint zero = header.ReadUInt32LE();
         if (zero == 0)
         {
           ArkDirectory parent = makeOrGetDir(fileNames[dirStringId]);

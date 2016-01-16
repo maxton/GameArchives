@@ -92,7 +92,7 @@ namespace GameArchives.STFS
       {
         dataBlocks = container.GetFileBlocks(startBlock, numBlocks, false);
       }
-      return new STFSFileStream(container, dataBlocks, (uint)Size);
+      return new STFSFileStream(container, dataBlocks, Size);
     }
   }
 
@@ -105,7 +105,7 @@ namespace GameArchives.STFS
     int[] blocks;
     long position;
 
-    internal STFSFileStream(STFSPackage container, int[] blocks, uint size)
+    internal STFSFileStream(STFSPackage container, int[] blocks, long size)
     {
       Length = size;
       this.blocks = blocks;
