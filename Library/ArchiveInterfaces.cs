@@ -48,7 +48,7 @@ namespace GameArchives
     /// <summary>
     /// The size of this file.
     /// </summary>
-    ulong Size { get; }
+    long Size { get; }
 
     /// <summary>
     /// Indicates whether this file is compressed in the archive.
@@ -58,7 +58,7 @@ namespace GameArchives
     /// <summary>
     /// The size of this file, as it is in the archive.
     /// </summary>
-    ulong CompressedSize { get; }
+    long CompressedSize { get; }
     
     /// <summary>
     /// Get a byte-array in memory containing all the data of this file.

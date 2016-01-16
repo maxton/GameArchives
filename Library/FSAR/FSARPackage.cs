@@ -80,9 +80,9 @@ namespace GameArchives.FSAR
         filestream.Position = 0x20 + 0x120 * f;
         string fpath = filestream.ReadASCIINullTerminated();
         filestream.Position = 0x20 + 0x120 * f + 0x100;
-        ulong size = filestream.ReadUInt64BE();
-        ulong zsize = filestream.ReadUInt64BE();
-        ulong offset = filestream.ReadUInt64BE();
+        long size = filestream.ReadInt64BE();
+        long zsize = filestream.ReadInt64BE();
+        long offset = filestream.ReadInt64BE();
         uint zipped = filestream.ReadUInt32BE();
         FSARDirectory dir = makeOrGetDir(fpath);
         string filename = fpath.Split('\\').Last();

@@ -14,13 +14,13 @@ namespace GameArchives.XISO
   {
     public bool Compressed => false;
 
-    public ulong CompressedSize => Size;
+    public long CompressedSize => Size;
 
     public string Name { get; }
 
     public IDirectory Parent { get; }
 
-    public ulong Size => (ulong)size;
+    public long Size => size;
 
     public byte[] GetBytes()
     {

@@ -30,10 +30,10 @@ namespace GameArchives.Ark
 
     public IDirectory Parent { get; }
 
-    public ulong Size { get; }
+    public long Size { get; }
 
     public bool Compressed => false;
-    public ulong CompressedSize => Size;
+    public long CompressedSize => Size;
 
     /// <summary>
     /// The offset of this file relative to its .ark file
@@ -66,7 +66,7 @@ namespace GameArchives.Ark
 
     public Stream GetStream()
     {
-      return new Common.OffsetStream(ark, offset, (long)Size);
+      return new Common.OffsetStream(ark, offset, Size);
     }
   }
 }

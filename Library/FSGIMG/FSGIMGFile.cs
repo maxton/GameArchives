@@ -25,15 +25,15 @@ namespace GameArchives.FSGIMG
   class FSGIMGFile : IFile
   {
     public bool Compressed => false;
-    public ulong CompressedSize => Size;
+    public long CompressedSize => Size;
     public string Name { get; }
     public IDirectory Parent { get; }
-    public ulong Size { get; }
+    public long Size { get; }
 
     private Stream img_file;
-    private ulong data_offset;
+    private long data_offset;
 
-    public FSGIMGFile(string name, IDirectory parent, Stream img, ulong offset, ulong size)
+    public FSGIMGFile(string name, IDirectory parent, Stream img, long offset, long size)
     {
       Name = name;
       Parent = parent;
@@ -50,7 +50,7 @@ namespace GameArchives.FSGIMG
 
     public Stream GetStream()
     {
-      return new OffsetStream(img_file, (long)data_offset, (long)Size);
+      return new OffsetStream(img_file, data_offset, Size);
     }
   }
 }

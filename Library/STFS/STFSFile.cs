@@ -30,11 +30,11 @@ namespace GameArchives.STFS
 
     public IDirectory Parent { get; }
 
-    public ulong Size { get; }
+    public long Size { get; }
 
     public bool Compressed => false;
 
-    public ulong CompressedSize => Size;
+    public long CompressedSize => Size;
 
 
     STFSPackage container;

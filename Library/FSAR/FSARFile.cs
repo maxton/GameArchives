@@ -31,22 +31,22 @@ namespace GameArchives.FSAR
   {
     public string Name { get; }
     public IDirectory Parent { get; }
-    public ulong Size { get; }
+    public long Size { get; }
     public bool Compressed { get; }
-    public ulong CompressedSize { get; }
+    public long CompressedSize { get; }
 
     private long offset;
     private Stream archive;
 
-    public FSARFile(string n, IDirectory p, ulong size, bool compressed,
-                    ulong zsize, ulong offset, Stream archive)
+    public FSARFile(string n, IDirectory p, long size, bool compressed,
+                    long zsize, long offset, Stream archive)
     {
       Name = n;
       Parent = p;
       Size = size;
       Compressed = compressed;
       CompressedSize = zsize;
-      this.offset = (long)offset;
+      this.offset = offset;
       this.archive = archive;
     }
 
@@ -67,9 +67,9 @@ namespace GameArchives.FSAR
     public Stream GetStream()
     {
       if (!Compressed)
-        return new OffsetStream(archive, offset, (long)Size);
+        return new OffsetStream(archive, offset, Size);
       else
-        return new DeflateStream(new OffsetStream(archive, offset + 2, (long)CompressedSize - 2),
+        return new DeflateStream(new OffsetStream(archive, offset + 2, CompressedSize - 2),
                                  CompressionMode.Decompress);
     }
   }

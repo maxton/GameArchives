@@ -39,7 +39,7 @@ namespace ArchiveExplorer
       fileView.View = v;
     }
 
-    private string HumanReadableFileSize(ulong size)
+    private string HumanReadableFileSize(long size)
     {
       if (size > (1024 * 1024 * 1024))
       {
