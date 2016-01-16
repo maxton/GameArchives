@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameArchives;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,8 @@ namespace ArchiveExplorer
     }
     
     public bool Ready { get; private set; }
+
+    public Action<IFile> Loader { get; set; }
 
     private System.Windows.Forms.ToolStripStatusLabel statusLabel;
     private System.Windows.Forms.ToolStripStatusLabel spinner;
@@ -52,6 +55,11 @@ namespace ArchiveExplorer
         spinner.Visible = true;
       if (statusLabel != null)
         statusLabel.Text = busyState;
+    }
+
+    public void LoadFile(IFile f, AbstractPackage owner = null)
+    {
+      Loader(f);
     }
   }
 }

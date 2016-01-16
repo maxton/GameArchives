@@ -51,6 +51,8 @@
     <Compile Include="Common\DefaultDirectory.cs" />
     <Compile Include="Common\MultiStream.cs" />
     <Compile Include="Common\OffsetStream.cs" />
+    <Compile Include="Local\LocalDirectory.cs" />
+    <Compile Include="Local\LocalFile.cs" />
     <Compile Include="PackageReader.cs" />
     <Compile Include="FSAR\FSARDirectory.cs" />
     <Compile Include="FSAR\FSARFile.cs" />

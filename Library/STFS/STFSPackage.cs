@@ -147,22 +147,9 @@ namespace GameArchives.STFS
     public Image TitleThumbnail { get; }
 
     /// <summary>
-    /// The filename of this package, if it was opened from disk.
+    /// The filename of this package.
     /// </summary>
-    public override string FileName
-    {
-      get
-      {
-        if(stream is System.IO.FileStream)
-        {
-          return ((System.IO.FileStream)stream).Name;
-        }
-        else
-        {
-          return "AnonymousPackage";
-        }
-      }
-    }
+    public override string FileName { get; }
 
     int BaseBlock => tableSizeShift == 0 ? 0xB << 12 : 0xA << 12;
 
@@ -189,9 +176,9 @@ namespace GameArchives.STFS
     /// <param name="path">Path to the STFS file.</param>
     /// <returns>New STFS instance which refers to given file.</returns>
     /// <exception cref="System.IO.InvalidDataException">Thrown if file is not valid STFS package.</exception>
-    public static STFSPackage OpenFile(string path)
+    public static STFSPackage OpenFile(IFile f)
     {
-      return new STFSPackage(System.IO.File.OpenRead(path));
+      return new STFSPackage(f);
     }
 
     /// <summary>
@@ -203,8 +190,10 @@ namespace GameArchives.STFS
         Dispose();
     }
 
-    private STFSPackage(System.IO.Stream input)
+    private STFSPackage(IFile f)
     {
+      Stream input = f.GetStream();
+      FileName = f.Name;
       if (!IsSTFS(input))
       {
         throw new System.IO.InvalidDataException("Given file is not a valid STFS archive.");

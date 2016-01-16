@@ -42,13 +42,14 @@ namespace ArchiveExplorer
       pm = PackageManager.GetInstance();
       pm.Spinner = this.spinnerLabel;
       pm.StatusLabel = this.toolStripStatusLabel1;
+      pm.Loader = LoadFile;
       pm.SetReady();
       string[] args = Environment.GetCommandLineArgs();
       if (args.Length > 1)
       {
         if(File.Exists(args[1]))
         {
-          LoadFile(args[1]);
+          LoadFile(Util.LocalFile(args[1]));
         }
       }
     }
@@ -57,7 +58,7 @@ namespace ArchiveExplorer
     /// Deal with a new file.
     /// </summary>
     /// <param name="file"></param>
-    private async void LoadFile(string file)
+    private async void LoadFile(IFile file)
     {
       var newPage = new TabPage();
       newPage.Text = "Loading...";
@@ -97,7 +98,7 @@ namespace ArchiveExplorer
       of.Filter += "All Files (*.*)|*.*|" + PackageReader.SupportedFormats;
       if (of.ShowDialog() == DialogResult.OK)
       {
-        LoadFile(of.FileName);
+        LoadFile(Util.LocalFile(of.FileName));
       }
     }
 

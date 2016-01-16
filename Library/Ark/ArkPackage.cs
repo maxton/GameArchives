@@ -118,9 +118,9 @@ namespace GameArchives.Ark
       return version <= 6 && version >= 3;
     }
 
-    public static ArkPackage OpenFile(string filename)
+    public static ArkPackage OpenFile(IFile f)
     {
-      return new ArkPackage(filename);
+      return new ArkPackage(f);
     }
 
     public static ArkPackage FromStream(Stream fs)
@@ -133,10 +133,10 @@ namespace GameArchives.Ark
     /// Note: will check for data files and throw exception if they're not found.
     /// </summary>
     /// <param name="pathToHdr">Full path to .hdr file</param>
-    public ArkPackage(string pathToHdr)
+    public ArkPackage(IFile hdrFile)
     {
-      FileName = pathToHdr;
-      using (var hdr = new FileStream(pathToHdr, FileMode.Open, FileAccess.Read))
+      FileName = hdrFile.Name;
+      using (var hdr = hdrFile.GetStream())
       {
         Stream actualHdr = hdr;
         uint version = hdr.ReadUInt32LE();
@@ -151,11 +151,11 @@ namespace GameArchives.Ark
           }
           version = actualHdr.ReadUInt32LE();
         }
-        readHeader(actualHdr, pathToHdr, version);
+        readHeader(actualHdr, hdrFile, version);
       }
     }
 
-    private void readHeader(Stream header, string headerPath, uint version)
+    private void readHeader(Stream header, IFile hdrFile, uint version, bool brokenv5 = false)
     {
       if (version == 6) // Version 6 has some sort of hash/key at the beginning?
       {
@@ -174,6 +174,13 @@ namespace GameArchives.Ark
       {
         // All versions except 4 use 32-bit file sizes.
         arkFileSizes[i] = (version == 4 ? header.ReadInt64LE() : header.ReadInt32LE());
+        if(version == 4 && arkFileSizes[i] > UInt32.MaxValue) 
+        {
+          // RB TrackPack Classic has a broken v4, really a v5 mixed with v3
+          header.Position = 4;
+          readHeader(header, hdrFile, 5, true);
+          return;
+        }
         totalArkFileSizes += arkFileSizes[i];
       }
 
@@ -188,9 +195,8 @@ namespace GameArchives.Ark
         contentFiles = new Stream[numArks];
         for (var i = 0; i < numArkPaths; i++)
         {
-          string filePath = Path.Combine(Path.GetDirectoryName(headerPath),
-                                         header.ReadLengthUTF8().Split('/').Last());
-          contentFiles[i] = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+          IFile arkFile = hdrFile.Parent.GetFile(header.ReadLengthUTF8().Split('/').Last());
+          contentFiles[i] = arkFile.GetStream();
         }
 
         // Version 6: appears to checksums or something for each content file
@@ -205,9 +211,8 @@ namespace GameArchives.Ark
         contentFiles = new Stream[numArks];
         for (var i = 0; i < numArks2; i++)
         {
-          string filePath = Path.Combine(Path.GetDirectoryName(headerPath),
-                                         Path.GetFileNameWithoutExtension(headerPath)) + "_" + i + ".ark";
-          contentFiles[i] = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+          IFile arkFile = hdrFile.Parent.GetFile(hdrFile.Name.Substring(0, hdrFile.Name.Length - 4) + "_" + i + ".ark");
+          contentFiles[i] = arkFile.GetStream();
         }
       }
 
@@ -258,7 +263,7 @@ namespace GameArchives.Ark
       for (var i = 0; i < numFiles; i++)
       {
         // Version 3 uses 32-bit file offsets
-        long arkFileOffset = (version == 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
+        long arkFileOffset = (brokenv5 || version == 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
         int filenameStringId = header.ReadInt32LE();
         uint dirStringId = header.ReadUInt32LE();
         uint size = header.ReadUInt32LE();

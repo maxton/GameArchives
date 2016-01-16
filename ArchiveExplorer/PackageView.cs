@@ -183,6 +183,10 @@ namespace ArchiveExplorer
         {
           SetCurrentDir(fileView.SelectedItems[0].Tag as IDirectory);
         }
+        else if (fileView.SelectedItems[0].Tag is IFile)
+        {
+          pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, currentPackage);
+        }
       }
     }
 
@@ -215,5 +219,17 @@ namespace ArchiveExplorer
       }
     }
 
+    private void openSelectedArchiveToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      if(fileView.SelectedItems.Count != 1)
+      {
+        MessageBox.Show("Please select just one archive to open.");
+        return;
+      }
+      if(fileView.SelectedItems[0].Tag is IFile)
+      {
+        pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, currentPackage);
+      }
+    }
   }
 }

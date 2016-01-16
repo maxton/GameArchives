@@ -36,9 +36,9 @@ namespace GameArchives.FSGIMG
       using (FileStream fs = File.OpenRead(path))
         return IsFSGIMG(fs);
     }
-    public static FSGIMGPackage OpenFile(string path)
+    public static FSGIMGPackage OpenFile(IFile f)
     {
-      return new FSGIMGPackage(path);
+      return new FSGIMGPackage(f);
     }
 
     public override string FileName { get; }
@@ -58,17 +58,18 @@ namespace GameArchives.FSGIMG
       public long size;
     }
 
-    public FSGIMGPackage(string filename)
+    public FSGIMGPackage(IFile f)
     {
-      FileName = filename;
+      FileName = f.Name;
       var parts = new List<Stream>(1);
-      parts.Add(new FileStream(filename, FileMode.Open));
-      if (filename.Split('.').Length > 2) // this is a .part* file
+      parts.Add(f.GetStream());
+      if (f.Name.Split('.').Length > 2) // this is a .part* file
       {
         int partNum = 1;
-        while (File.Exists(filename.Substring(0, filename.Length - 1) + partNum))
+        IFile tmp;
+        while (f.Parent.TryGetFile(f.Name.Substring(0, f.Name.Length - 1) + partNum, out tmp))
         {
-          var fs = new FileStream(filename.Substring(0, filename.Length - 1) + partNum, FileMode.Open);
+          var fs = tmp.GetStream();
           parts.Add(fs);
           partNum++;
         }

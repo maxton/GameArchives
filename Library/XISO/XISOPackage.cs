@@ -45,15 +45,15 @@ namespace GameArchives.XISO
       return false;
     }
 
-    public static XISOPackage OpenFile(string filename)
+    public static XISOPackage OpenFile(IFile f)
     {
-      return new XISOPackage(filename);
+      return new XISOPackage(f);
     }
 
-    private XISOPackage(string filename)
+    private XISOPackage(IFile f)
     {
-      this.filename = filename;
-      stream = File.OpenRead(filename);
+      this.filename = f.Name;
+      stream = f.GetStream();
       if (!IsXISO(stream))
       {
         stream.Dispose();

@@ -17,9 +17,17 @@ namespace GameArchives
     /// <exception cref="NotSupportedException">Thrown when an unsupported file type is given.</exception>
     public static AbstractPackage ReadPackageFromFile(string file)
     {
-      foreach(PackageType t in PackageType.Types)
+      return ReadPackageFromFile(Util.LocalFile(file));
+    }
+
+    public static AbstractPackage ReadPackageFromFile(IFile file)
+    {
+      foreach (PackageType t in PackageType.Types)
       {
-        if(t.CheckPath(file))
+        bool result;
+        using (Stream tmp = file.GetStream())
+          result = t.CheckStream(tmp);
+        if (result)
         {
           return t.Load(file);
         }

@@ -35,11 +35,12 @@
       this.nameColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
       this.typeColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
       this.sizeColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-      this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
       this.fileViewContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
       this.extractSelectedItems = new System.Windows.Forms.ToolStripMenuItem();
-      this.smallImageList = new System.Windows.Forms.ImageList(this.components);
       this.largeImageList = new System.Windows.Forms.ImageList(this.components);
+      this.smallImageList = new System.Windows.Forms.ImageList(this.components);
+      this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+      this.openSelectedArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.fileViewContextMenu.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -91,6 +92,35 @@
       this.sizeColumn.Text = "Size";
       this.sizeColumn.Width = 80;
       // 
+      // fileViewContextMenu
+      // 
+      this.fileViewContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.extractSelectedItems,
+            this.openSelectedArchiveToolStripMenuItem});
+      this.fileViewContextMenu.Name = "fileViewContextMenu";
+      this.fileViewContextMenu.Size = new System.Drawing.Size(197, 70);
+      // 
+      // extractSelectedItems
+      // 
+      this.extractSelectedItems.Name = "extractSelectedItems";
+      this.extractSelectedItems.Size = new System.Drawing.Size(196, 22);
+      this.extractSelectedItems.Text = "Extract selected items...";
+      this.extractSelectedItems.Click += new System.EventHandler(this.extractItemsToolStripMenuItem_Click);
+      // 
+      // largeImageList
+      // 
+      this.largeImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("largeImageList.ImageStream")));
+      this.largeImageList.TransparentColor = System.Drawing.Color.Transparent;
+      this.largeImageList.Images.SetKeyName(0, "Folder_large.png");
+      this.largeImageList.Images.SetKeyName(1, "File_large.png");
+      // 
+      // smallImageList
+      // 
+      this.smallImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("smallImageList.ImageStream")));
+      this.smallImageList.TransparentColor = System.Drawing.Color.Transparent;
+      this.smallImageList.Images.SetKeyName(0, "Folder_small.png");
+      this.smallImageList.Images.SetKeyName(1, "File_small.png");
+      // 
       // flowLayoutPanel1
       // 
       this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -101,33 +131,12 @@
       this.flowLayoutPanel1.Size = new System.Drawing.Size(455, 26);
       this.flowLayoutPanel1.TabIndex = 6;
       // 
-      // fileViewContextMenu
+      // openSelectedArchiveToolStripMenuItem
       // 
-      this.fileViewContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.extractSelectedItems});
-      this.fileViewContextMenu.Name = "fileViewContextMenu";
-      this.fileViewContextMenu.Size = new System.Drawing.Size(197, 48);
-      // 
-      // extractSelectedItems
-      // 
-      this.extractSelectedItems.Name = "extractSelectedItems";
-      this.extractSelectedItems.Size = new System.Drawing.Size(196, 22);
-      this.extractSelectedItems.Text = "Extract selected items...";
-      this.extractSelectedItems.Click += new System.EventHandler(this.extractItemsToolStripMenuItem_Click);
-      // 
-      // smallImageList
-      // 
-      this.smallImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("smallImageList.ImageStream")));
-      this.smallImageList.TransparentColor = System.Drawing.Color.Transparent;
-      this.smallImageList.Images.SetKeyName(0, "Folder_small.png");
-      this.smallImageList.Images.SetKeyName(1, "File_small.png");
-      // 
-      // largeImageList
-      // 
-      this.largeImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("largeImageList.ImageStream")));
-      this.largeImageList.TransparentColor = System.Drawing.Color.Transparent;
-      this.largeImageList.Images.SetKeyName(0, "Folder_large.png");
-      this.largeImageList.Images.SetKeyName(1, "File_large.png");
+      this.openSelectedArchiveToolStripMenuItem.Name = "openSelectedArchiveToolStripMenuItem";
+      this.openSelectedArchiveToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+      this.openSelectedArchiveToolStripMenuItem.Text = "Open selected archive";
+      this.openSelectedArchiveToolStripMenuItem.Click += new System.EventHandler(this.openSelectedArchiveToolStripMenuItem_Click);
       // 
       // PackageView
       // 
@@ -157,5 +166,6 @@
     private System.Windows.Forms.ToolStripMenuItem extractSelectedItems;
     private System.Windows.Forms.ImageList largeImageList;
     private System.Windows.Forms.ImageList smallImageList;
+    private System.Windows.Forms.ToolStripMenuItem openSelectedArchiveToolStripMenuItem;
   }
 }

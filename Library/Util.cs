@@ -24,6 +24,18 @@ namespace GameArchives
 {
   public static class Util
   {
+    /// <summary>
+    /// Create an instance of an IFile from the given local path.
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    public static IFile LocalFile(string file)
+    {
+      IDirectory d = new Local.LocalDirectory(Path.GetDirectoryName(file));
+      IFile f = d.GetFile(Path.GetFileName(file));
+      return f;
+    }
+
     public static T Last<T>(this T[] arr)
     {
       return arr[arr.Length - 1];

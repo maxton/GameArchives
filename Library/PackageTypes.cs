@@ -37,13 +37,13 @@ namespace GameArchives
     public Func<Stream, bool> CheckStream { get; }
 
     /// <summary>
-    /// Given a string which is the path to a valid package, opens it as this
+    /// Given a file which is a valid package, opens it as this
     /// package type, returning the package instance.
     /// </summary>
-    public Func<string, AbstractPackage> Load { get; }
+    public Func<IFile, AbstractPackage> Load { get; }
 
     PackageType(string name, string[] extensions,
-      Func<string, bool> path, Func<Stream, bool> stream, Func<string, AbstractPackage> load)
+      Func<string, bool> path, Func<Stream, bool> stream, Func<IFile, AbstractPackage> load)
     {
       Name = name;
       Extensions = extensions;

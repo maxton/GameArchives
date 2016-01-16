@@ -39,9 +39,9 @@ namespace GameArchives.FSAR
       return s.ReadUInt32BE() == 0x46534152;
     }
 
-    public static FSARPackage FromFile(string fn)
+    public static FSARPackage FromFile(IFile f)
     {
-      return new FSARPackage(fn);
+      return new FSARPackage(f);
     }
 
     public override string FileName { get; }
@@ -54,14 +54,14 @@ namespace GameArchives.FSAR
     private FSARDirectory root;
 
     /// <summary>
-    /// Open the .far archive at the given path.
+    /// Open the .far archive which is the given file.
     /// </summary>
     /// <param name="path"></param>
-    public FSARPackage(string path)
+    public FSARPackage(IFile f)
     {
-      FileName = path;
+      FileName = f.Name;
       root = new FSARDirectory(null, ROOT_DIR);
-      filestream = new FileStream(path, FileMode.Open);
+      filestream = f.GetStream();
       uint magic = filestream.ReadUInt32BE();
       if(magic == 0x46534743) // "FSGC"
       {
@@ -75,11 +75,11 @@ namespace GameArchives.FSAR
       uint file_base = filestream.ReadUInt32BE();
       uint num_files = filestream.ReadUInt32BE();
       filestream.Position = 0x20;
-      for(int f = 0; f < num_files; f++)
+      for(int i = 0; i < num_files; i++)
       {
-        filestream.Position = 0x20 + 0x120 * f;
+        filestream.Position = 0x20 + 0x120 * i;
         string fpath = filestream.ReadASCIINullTerminated();
-        filestream.Position = 0x20 + 0x120 * f + 0x100;
+        filestream.Position = 0x20 + 0x120 * i + 0x100;
         long size = filestream.ReadInt64BE();
         long zsize = filestream.ReadInt64BE();
         long offset = filestream.ReadInt64BE();
