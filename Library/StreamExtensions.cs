@@ -273,11 +273,9 @@ namespace GameArchives
     {
       StringBuilder sb = new StringBuilder(255);
       char cur;
-      while ((cur = (char)s.ReadByte()) != 0)
+      while ((limit == -1 || sb.Length < limit) && (cur = (char)s.ReadByte()) != 0)
       {
         sb.Append(cur);
-        if (limit != -1 && sb.Length > limit)
-          break;
       }
       return sb.ToString();
     }

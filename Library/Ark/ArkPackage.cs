@@ -99,7 +99,7 @@ namespace GameArchives.Ark
 
     public static bool IsArk(string fn)
     {
-      using (FileStream fs = new FileStream(fn, FileMode.Open))
+      using (FileStream fs = File.OpenRead(fn))
         return IsArk(fs);
     }
 
@@ -118,7 +118,7 @@ namespace GameArchives.Ark
       return version <= 6 && version >= 3;
     }
 
-    public static ArkPackage FromPath(string filename)
+    public static ArkPackage OpenFile(string filename)
     {
       return new ArkPackage(filename);
     }

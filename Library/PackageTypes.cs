@@ -58,12 +58,12 @@ namespace GameArchives
         new string[] { "*.hdr" }, 
         Ark.ArkPackage.IsArk,
         Ark.ArkPackage.IsArk,
-        Ark.ArkPackage.FromPath),
+        Ark.ArkPackage.OpenFile),
       new PackageType("STFS Package",
         new string[] {"*.*"},
         STFS.STFSPackage.IsSTFS, 
         STFS.STFSPackage.IsSTFS, 
-        STFS.STFSPackage.Open),
+        STFS.STFSPackage.OpenFile),
       new PackageType("FSAR Archive", 
         new string[] { "*.far" }, 
         FSAR.FSARPackage.IsFSAR, 
@@ -74,6 +74,11 @@ namespace GameArchives
         FSGIMG.FSGIMGPackage.IsFSGIMG,
         FSGIMG.FSGIMGPackage.IsFSGIMG,
         FSGIMG.FSGIMGPackage.OpenFile),
+      new PackageType("XBOX/Xbox360 ISO",
+        new string[] {"*.iso"},
+        XISO.XISOPackage.IsXISO,
+        XISO.XISOPackage.IsXISO,
+        XISO.XISOPackage.OpenFile),
       //new PackageType("", new string[] { }, null, null, null)
     };
   }

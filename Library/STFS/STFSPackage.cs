@@ -189,7 +189,7 @@ namespace GameArchives.STFS
     /// <param name="path">Path to the STFS file.</param>
     /// <returns>New STFS instance which refers to given file.</returns>
     /// <exception cref="System.IO.InvalidDataException">Thrown if file is not valid STFS package.</exception>
-    public static STFSPackage Open(string path)
+    public static STFSPackage OpenFile(string path)
     {
       return new STFSPackage(System.IO.File.OpenRead(path));
     }
