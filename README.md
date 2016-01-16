@@ -32,3 +32,6 @@ This includes the CON and LIVE formats, used for game saves and downloadable
 content (among other things) on the Xbox 360. Since documentation on the format
 is somewhat limited, you may come across errors when trying to read these
 files. Please report any errors you encounter.
+
+### XDVDFS / GDFS (*.iso)
+This is the file system used on Xbox and Xbox 360 game discs.
