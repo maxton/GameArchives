@@ -58,15 +58,16 @@ namespace ArchiveExplorer
     /// Deal with a new file.
     /// </summary>
     /// <param name="file"></param>
-    private async void LoadFile(IFile file)
+    private async Task<PackageView> LoadFile(IFile file)
     {
       var newPage = new TabPage();
       newPage.Text = "Loading...";
       tabControl1.Controls.Add(newPage);
+      PackageView packageView = null;
       try
       {
         var newPackage = await Task.Run(() => PackageReader.ReadPackageFromFile(file));
-        var packageView = new PackageView(newPackage);
+        packageView = new PackageView(newPackage);
         newPage.Text = newPackage.FileName;
         newPage.Controls.Add(packageView);
         packageView.Tag = newPage;
@@ -84,6 +85,7 @@ namespace ArchiveExplorer
         tabControl1.Controls.Remove(newPage);
         MessageBox.Show("Could not load archive!" + Environment.NewLine + ex.Message, "Error");
       }
+      return packageView;
     }//LoadFile
 
     public void RemoveTab(TabPage p)

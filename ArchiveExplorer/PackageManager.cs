@@ -21,7 +21,7 @@ namespace ArchiveExplorer
     
     public bool Ready { get; private set; }
 
-    public Action<IFile> Loader { get; set; }
+    public Func<IFile, Task<PackageView>> Loader { get; set; }
 
     private System.Windows.Forms.ToolStripStatusLabel statusLabel;
     private System.Windows.Forms.ToolStripStatusLabel spinner;
@@ -57,9 +57,13 @@ namespace ArchiveExplorer
         statusLabel.Text = busyState;
     }
 
-    public void LoadFile(IFile f, AbstractPackage owner = null)
+    public async void LoadFile(IFile f, PackageView owner = null)
     {
-      Loader(f);
+      var pkgView = await Loader(f);
+      if(owner != null && pkgView != null)
+      {
+        owner.AddChildPackage(pkgView);
+      }
     }
   }
 }

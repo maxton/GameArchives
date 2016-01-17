@@ -66,9 +66,28 @@ namespace ArchiveExplorer
       ResetBreadcrumbs();
     }
 
+    public void AddChildPackage(PackageView p)
+    {
+      this.children.Add(p);
+      p.SetParentPackage(this);
+    }
+
+    public void RemoveChildPackage(PackageView p)
+    {
+      this.children.Remove(p);
+    }
+
+    private PackageView parent = null;
+    public void SetParentPackage(PackageView p)
+    {
+      parent = p;
+    }
+
     public void Unload()
     {
-      foreach(var pkg in children)
+      parent?.RemoveChildPackage(this);
+      var childrenFixed = children.ToArray();
+      foreach(var pkg in childrenFixed)
       {
         pkg.Unload();
       }
@@ -185,7 +204,7 @@ namespace ArchiveExplorer
         }
         else if (fileView.SelectedItems[0].Tag is IFile)
         {
-          pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, currentPackage);
+          pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, this);
         }
       }
     }
@@ -228,7 +247,7 @@ namespace ArchiveExplorer
       }
       if(fileView.SelectedItems[0].Tag is IFile)
       {
-        pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, currentPackage);
+        pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, this);
       }
     }
   }
