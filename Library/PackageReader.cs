@@ -6,6 +6,12 @@ using System.Text;
 
 namespace GameArchives
 {
+  public enum PackageTestResult
+  {
+    NO,
+    YES,
+    MAYBE
+  };
   public class PackageReader
   {
     /// <summary>
@@ -22,14 +28,28 @@ namespace GameArchives
 
     public static AbstractPackage ReadPackageFromFile(IFile file)
     {
+      var possible = new List<PackageType>();
       foreach (PackageType t in PackageType.Types)
       {
-        bool result;
-        using (Stream tmp = file.GetStream())
-          result = t.CheckStream(tmp);
-        if (result)
+        var result = t.CheckFile(file);
+        if (result == PackageTestResult.YES)
         {
           return t.Load(file);
+        }
+        else if(result == PackageTestResult.MAYBE)
+        {
+          possible.Add(t);
+        }
+      }
+      foreach(PackageType t in possible)
+      {
+        try
+        {
+          return t.Load(file);
+        }
+        catch(InvalidDataException)
+        {
+          continue;
         }
       }
       throw new NotSupportedException("Given file was not a supported archive format.");

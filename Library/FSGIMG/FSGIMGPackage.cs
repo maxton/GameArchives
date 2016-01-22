@@ -26,15 +26,10 @@ namespace GameArchives.FSGIMG
 {
   public class FSGIMGPackage : AbstractPackage
   {
-    public static bool IsFSGIMG(Stream s)
+    public static PackageTestResult IsFSGIMG(IFile f)
     {
-      s.Position = 0;
-      return s.ReadASCIINullTerminated(16) == "FSG-FILE-SYSTEM";
-    }
-    public static bool IsFSGIMG(string path)
-    {
-      using (FileStream fs = File.OpenRead(path))
-        return IsFSGIMG(fs);
+      using (Stream fs = f.GetStream())
+        return fs.ReadASCIINullTerminated(16) == "FSG-FILE-SYSTEM" ? PackageTestResult.YES : PackageTestResult.NO;
     }
     public static FSGIMGPackage OpenFile(IFile f)
     {

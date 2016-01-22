@@ -28,8 +28,8 @@ namespace GameArchives.Common
   /// </summary>
   public class DefaultDirectory : IDirectory
   {
-    private SortedDictionary<string, IFile> files;
-    private SortedDictionary<string, IDirectory> dirs;
+    protected SortedDictionary<string, IFile> files;
+    protected SortedDictionary<string, IDirectory> dirs;
 
     public string Name { get; }
 
@@ -38,7 +38,7 @@ namespace GameArchives.Common
     public ICollection<IDirectory> Dirs => dirs.Values;
     public ICollection<IFile> Files => files.Values;
 
-    public bool TryGetDirectory(string name, out IDirectory dir)
+    public virtual bool TryGetDirectory(string name, out IDirectory dir)
     {
       return dirs.TryGetValue(name.ToLower(), out dir);
     }
@@ -73,7 +73,7 @@ namespace GameArchives.Common
       {
         return GetFile(breadcrumbs[0]);
       }
-      string newPath = string.Join(AbstractPackage.PATH_SEPARATOR.ToString(), breadcrumbs, 1, breadcrumbs.Length);
+      string newPath = string.Join(AbstractPackage.PATH_SEPARATOR.ToString(), breadcrumbs, 1, breadcrumbs.Length - 1);
       return GetDirectory(breadcrumbs[0]).GetFileAtPath(newPath);
     }
 

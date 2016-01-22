@@ -25,16 +25,10 @@ namespace GameArchives
     public string[] Extensions { get; }
 
     /// <summary>
-    /// Given a full path to a file, determines whether the file is
+    /// Given a file, determines whether the file is
     /// of this package type.
     /// </summary>
-    public Func<string, bool> CheckPath { get; }
-
-    /// <summary>
-    /// Given a stream which points to a file, determines whether the file
-    /// is of this package type.
-    /// </summary>
-    public Func<Stream, bool> CheckStream { get; }
+    public Func<IFile, PackageTestResult> CheckFile { get; }
 
     /// <summary>
     /// Given a file which is a valid package, opens it as this
@@ -43,12 +37,11 @@ namespace GameArchives
     public Func<IFile, AbstractPackage> Load { get; }
 
     PackageType(string name, string[] extensions,
-      Func<string, bool> path, Func<Stream, bool> stream, Func<IFile, AbstractPackage> load)
+      Func<IFile, PackageTestResult> file, Func<IFile, AbstractPackage> load)
     {
       Name = name;
       Extensions = extensions;
-      CheckPath = path;
-      CheckStream = stream;
+      CheckFile = file;
       Load = load;
     }
 
@@ -57,26 +50,21 @@ namespace GameArchives
       new PackageType("Ark/Hdr Package", 
         new string[] { "*.hdr" }, 
         Ark.ArkPackage.IsArk,
-        Ark.ArkPackage.IsArk,
         Ark.ArkPackage.OpenFile),
       new PackageType("STFS Package",
         new string[] { "*.*" },
-        STFS.STFSPackage.IsSTFS, 
         STFS.STFSPackage.IsSTFS, 
         STFS.STFSPackage.OpenFile),
       new PackageType("FSAR Archive", 
         new string[] { "*.far" }, 
         FSAR.FSARPackage.IsFSAR, 
-        FSAR.FSARPackage.IsFSAR, 
         FSAR.FSARPackage.FromFile),
       new PackageType("FSG-FILE-SYSTEM",
         new string[] { "*.img", "*.img.part000", "*.img.part0" },
         FSGIMG.FSGIMGPackage.IsFSGIMG,
-        FSGIMG.FSGIMGPackage.IsFSGIMG,
         FSGIMG.FSGIMGPackage.OpenFile),
       new PackageType("XBOX/Xbox360 ISO",
         new string[] { "*.iso" },
-        XISO.XISOPackage.IsXISO,
         XISO.XISOPackage.IsXISO,
         XISO.XISOPackage.OpenFile),
       //new PackageType("", new string[] { }, null, null, null)

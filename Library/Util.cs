@@ -24,6 +24,12 @@ namespace GameArchives
 {
   public static class Util
   {
+    public static IDirectory LocalDir(string dir)
+    {
+      IDirectory d = new Local.LocalDirectory(dir);
+      return d;
+    }
+
     /// <summary>
     /// Create an instance of an IFile from the given local path.
     /// </summary>

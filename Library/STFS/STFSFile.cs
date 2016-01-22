@@ -48,8 +48,9 @@ namespace GameArchives.STFS
       Parent = parent;
       Size = size;
       this.dataBlocks = dataBlocks;
-      startBlock = dataBlocks[0];
       numBlocks = dataBlocks.Length;
+      if(numBlocks > 0)
+        startBlock = dataBlocks[0];
       this.container = container;
     }
 

@@ -27,16 +27,13 @@ namespace GameArchives.FSAR
 {
   public class FSARPackage : AbstractPackage
   {
-    public static bool IsFSAR(string fn)
+    public static PackageTestResult IsFSAR(IFile f)
     {
-      using (FileStream fs = File.OpenRead(fn))
-        return IsFSAR(fs);
-    }
-
-    public static bool IsFSAR(Stream s)
-    {
-      s.Position = 0;
-      return s.ReadUInt32BE() == 0x46534152;
+      using (Stream s = f.GetStream())
+      {
+        s.Position = 0;
+        return s.ReadUInt32BE() == 0x46534152 ? PackageTestResult.YES : PackageTestResult.NO;
+      }
     }
 
     public static FSARPackage FromFile(IFile f)

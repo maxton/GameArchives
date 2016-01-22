@@ -36,7 +36,11 @@ namespace GameArchives.STFS
     /// <summary>
     /// Package signed for XBOX Live.
     /// </summary>
-    LIVE
+    LIVE,
+    /// <summary>
+    /// Package used in system files and on-disc content.
+    /// </summary>
+    PIRS
   };
 
   internal class BlockHash
@@ -85,28 +89,16 @@ namespace GameArchives.STFS
     /// </summary>
     /// <param name="filename">Absolute path to file.</param>
     /// <returns>Is the file an STFS?</returns>
-    public static bool IsSTFS(string filename)
+    public static PackageTestResult IsSTFS(IFile f)
     {
-      using (FileStream fs = File.OpenRead(filename))
+      using (Stream fs = f.GetStream())
       {
-        return IsSTFS(fs);
+        if (!fs.CanSeek && fs.Position != 0)
+          throw new Exception("Must be able to seek to the beginning the file.");
+        fs.Seek(0, SeekOrigin.Begin);
+        string magic = fs.ReadASCIINullTerminated(4);
+        return magic == "CON " || magic == "LIVE" || magic == "PIRS" ? PackageTestResult.YES : PackageTestResult.NO;
       }
-    }
-
-    /// <summary>
-    /// Checks if the given stream is an STFS file (LIVE/CON).
-    /// </summary>
-    /// <param name="fs">Stream pointing to the data to be tested.</param>
-    /// <returns>Is it an STFS?</returns>
-    public static bool IsSTFS(Stream fs)
-    {
-      if (!fs.CanSeek && fs.Position != 0)
-        throw new Exception("Must be able to seek to the beginning the given stream.");
-      fs.Seek(0, SeekOrigin.Begin);
-      byte[] magic = new byte[4];
-      fs.Read(magic, 0, 4);
-      return (magic[0] == 'C' && magic[1] == 'O' && magic[2] == 'N' && magic[3] == ' ') ||
-             (magic[0] == 'L' && magic[1] == 'I' && magic[2] == 'V' && magic[3] == 'E');
     }
 
     /// <summary>
@@ -194,16 +186,26 @@ namespace GameArchives.STFS
     {
       Stream input = f.GetStream();
       FileName = f.Name;
-      if (!IsSTFS(input))
-      {
-        throw new System.IO.InvalidDataException("Given file is not a valid STFS archive.");
-      }
       disposed = false;
 
       stream = input;
 
       // Set the type of STFS file.
-      Type = stream.ReadByte() == 'C' ? Type.CON : Type.LIVE;
+      string magic = stream.ReadASCIINullTerminated(4);
+      switch (magic) {
+        case "CON ":
+          Type = Type.CON;
+          break;
+        case "LIVE":
+          Type = Type.LIVE;
+          break;
+        case "PIRS":
+          Type = Type.PIRS;
+          break;
+        default:
+          throw new InvalidDataException("STFS is not CON, LIVE, or PIRS");
+      }
+
       BlockCache = new byte[0x1000];
 
       // Set up STFS info.
@@ -232,9 +234,11 @@ namespace GameArchives.STFS
       int thumbnailImgSize = stream.ReadInt32BE();
       int titleThumbnailImgSize = stream.ReadInt32BE();
       stream.Position = 0x171A;
-      Thumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(thumbnailImgSize)));
+      if(thumbnailImgSize > 0)
+        Thumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(thumbnailImgSize)));
       stream.Position = 0x571A;
-      TitleThumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(titleThumbnailImgSize)));
+      if(titleThumbnailImgSize > 0)
+        TitleThumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(titleThumbnailImgSize)));
 
       root = new STFSDirectory(null, ROOT_DIR);
       var dirsOrdinal = new Dictionary<int, STFSDirectory>();
@@ -275,7 +279,7 @@ namespace GameArchives.STFS
             int access = curBlockStream.ReadInt32BE();
             STFSDirectory parent;
             if (!dirsOrdinal.TryGetValue(parentDir, out parent)) // get the parent if it exists
-              throw new System.IO.InvalidDataException("File references non-existent directory.");
+              throw new InvalidDataException("File references non-existent directory.");
 
             if ((flags & 0x80) == 0x80)
             {

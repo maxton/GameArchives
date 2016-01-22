@@ -97,25 +97,22 @@ namespace GameArchives.Ark
     public override IDirectory RootDirectory => root;
     public override bool Writeable => false;
 
-    public static bool IsArk(string fn)
+    public static PackageTestResult IsArk(IFile fn)
     {
-      using (FileStream fs = File.OpenRead(fn))
-        return IsArk(fs);
-    }
-
-    public static bool IsArk(Stream s)
-    {
-      s.Position = 0;
-      uint version = s.ReadUInt32LE();
-      if (version > 6)
+      using (Stream s = fn.GetStream())
       {
-        // hdr is encrypted, probably
-        using (var decryptor = new HdrCryptStream(s))
+        s.Position = 0;
+        uint version = s.ReadUInt32LE();
+        if (version > 6)
         {
-          version = decryptor.ReadUInt32LE();
+          // hdr is encrypted, probably
+          using (var decryptor = new HdrCryptStream(s))
+          {
+            version = decryptor.ReadUInt32LE();
+          }
         }
+        return version <= 6 && version >= 3 ? PackageTestResult.YES : PackageTestResult.NO;
       }
-      return version <= 6 && version >= 3;
     }
 
     public static ArkPackage OpenFile(IFile f)
@@ -167,7 +164,7 @@ namespace GameArchives.Ark
       int numArks2 = header.ReadInt32LE();
       if (numArks != numArks2)
       {
-        throw new Exception("Ark header appears to be invalid (.ark count mismatch).");
+        throw new InvalidDataException("Ark header appears to be invalid (.ark count mismatch).");
       }
       arkFileSizes = new long[numArks];
       for (var i = 0; i < numArks; i++)
@@ -190,7 +187,7 @@ namespace GameArchives.Ark
         int numArkPaths = header.ReadInt32LE();
         if (numArkPaths != numArks)
         {
-          throw new Exception("Ark header appears to be invalid (.ark count mismatch).");
+          throw new InvalidDataException("Ark header appears to be invalid (.ark count mismatch).");
         }
         contentFiles = new Stream[numArks];
         for (var i = 0; i < numArkPaths; i++)
@@ -232,7 +229,7 @@ namespace GameArchives.Ark
       uint numFileNames = header.ReadUInt32LE();
       if (numFileNames > fileNameTableSize)
       {
-        throw new Exception("Ark header appears to be invalid (number of filenames exceeds filename table size).");
+        throw new InvalidDataException("Ark header appears to be invalid (number of filenames exceeds filename table size).");
       }
       long[] fileNameOffsets = new long[numFileNames];
       for (var i = 0; i < numFileNames; i++)
