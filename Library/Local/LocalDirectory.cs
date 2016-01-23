@@ -29,10 +29,13 @@ namespace GameArchives.Local
 {
   /// <summary>
   /// Represents a directory in the local file system.
+  /// All files in the directory are loaded by default, while subdirectories
+  /// are loaded on-demand (although this may change in the future).
   /// </summary>
   public class LocalDirectory : DefaultDirectory
   {
     private readonly string path;
+    private bool dirsFilled = false;
 
     /// <summary>
     /// Make a shallow instance of the given local directory.
@@ -51,6 +54,20 @@ namespace GameArchives.Local
       }
     }
     
+    public override ICollection<IDirectory> Dirs {
+      get
+      {
+        if (dirsFilled) { return dirs.Values; }
+        foreach(string d in Directory.EnumerateDirectories(path))
+        {
+          IDirectory tmp = new LocalDirectory(d);
+          AddDir(tmp);
+        }
+        dirsFilled = true;
+        return dirs.Values;
+      }
+    }
+
     public override bool TryGetDirectory(string name, out IDirectory dir)
     {
       if(dirs.TryGetValue(name, out dir))
@@ -60,7 +77,7 @@ namespace GameArchives.Local
       else if(Directory.Exists(Path.Combine(path, name)))
       {
         dir = new LocalDirectory(Path.Combine(path, name));
-        dirs.Add(name, dir);
+        AddDir(dir);
         return true;
       }
       return false;

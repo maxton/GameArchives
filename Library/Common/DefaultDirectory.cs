@@ -24,7 +24,7 @@ namespace GameArchives.Common
   /// <summary>
   /// A default implementation of a directory.
   /// Useful for archives where directories are implicit.
-  /// Filenames are case-insensitive.
+  /// Important: File and directory names are case-insensitive.
   /// </summary>
   public class DefaultDirectory : IDirectory
   {
@@ -35,8 +35,8 @@ namespace GameArchives.Common
 
     public IDirectory Parent { get; }
 
-    public ICollection<IDirectory> Dirs => dirs.Values;
-    public ICollection<IFile> Files => files.Values;
+    public virtual ICollection<IDirectory> Dirs => dirs.Values;
+    public virtual ICollection<IFile> Files => files.Values;
 
     public virtual bool TryGetDirectory(string name, out IDirectory dir)
     {
@@ -51,7 +51,7 @@ namespace GameArchives.Common
       throw new System.IO.DirectoryNotFoundException("Unable to find the directory " + name);
     }
 
-    public bool TryGetFile(string name, out IFile file)
+    public virtual bool TryGetFile(string name, out IFile file)
     {
       return files.TryGetValue(name.ToLower(), out file);
     }
@@ -79,7 +79,7 @@ namespace GameArchives.Common
 
     internal void AddFile(IFile f)
     {
-      if (!files.ContainsKey(f.Name))
+      if (!files.ContainsKey(f.Name.ToLower()))
       {
         files.Add(f.Name.ToLower(), f);
       }
@@ -87,7 +87,7 @@ namespace GameArchives.Common
 
     internal void AddDir(IDirectory d)
     {
-      if (!dirs.ContainsKey(d.Name))
+      if (!dirs.ContainsKey(d.Name.ToLower()))
       {
         dirs.Add(d.Name.ToLower(), d);
       }
