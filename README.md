@@ -8,8 +8,9 @@ This format is used in many Harmonix games, including but not limited to:
 * Rock Band 1 - 3, Lego, Green Day, Beatles
 * Karaoke Revolution (untested)
 * MAGMA (RBN Authoring Tool, PC)
+* Disney Fantasia: Music Evolved
 
-Versions 3 through 6 are supported at this time.
+Versions 3 through 7 are supported at this time.
 
 ### FSG-FILE-SYSTEM (DISC0.img)
 This format is used in some FreeStyleGames games, including:

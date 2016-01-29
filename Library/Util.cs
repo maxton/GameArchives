@@ -32,6 +32,10 @@ namespace GameArchives
 
     /// <summary>
     /// Create an instance of an IFile from the given local path.
+    /// Note that this creates a new LocalDirectory object each time it is
+    /// called. If you are opening a lot of files from one directory, it's more
+    /// efficient to grab the directory with Util.LocalDir(), then get each
+    /// file from there.
     /// </summary>
     /// <param name="file"></param>
     /// <returns></returns>

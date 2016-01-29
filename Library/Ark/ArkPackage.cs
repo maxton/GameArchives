@@ -26,67 +26,11 @@ namespace GameArchives.Ark
   /// <summary>
   /// Ark Package
   /// </summary>
-  /// <remarks>
-  /// typedef struct {
-  ///   uint64 arkFileOffset;
-  ///   int filenameStringId;
-  ///   int dirStringId;
-  ///   uint size;
-  ///   uint zero;
-  /// } FILERECORD;
-  /// 
-  /// typedef struct {
-  ///   uint arkFileOffset;
-  ///   int filenameStringId;
-  ///   int dirStringId;
-  ///   uint size;
-  ///   uint zero;
-  /// } FILERECORD32;
-  /// 
-  /// typedef struct {
-  ///   uint version;
-  ///   if(version == 6){
-  ///     uint unk;
-  ///     char key[16];
-  ///     uint numArks;
-  ///     uint numArkSizes;
-  ///     uint arkSizes[numArkSizes];
-  ///     uint numFileNames;
-  ///     LENASCII arkFileNames[numFileNames];
-  ///     uint numChecksums;
-  ///     uint checksums[numChecksums];
-  ///   }
-  ///   else if(version == 5){
-  ///    uint numArks;
-  ///    uint numArks2;
-  ///    uint arkSizes[numArks2];
-  ///    uint numFileNames;
-  ///    LENASCII arkFileNames[numFileNames];
-  ///   }
-  ///   else if(version == 4){
-  ///     uint numArks;
-  ///     uint numArks2;
-  ///     uint64 arkSizes[numArks2];
-  ///   }
-  ///   else if(version == 3)}
-  ///     uint numArks;
-  ///     uint numArks2;
-  ///     uint arkSizes[numArks2];
-  ///   }
-  ///   uint fileNameTableSize;
-  ///   local int tableOffset = FTell();
-  ///   char fileNameTable[fileNameTableSize];
-  ///   uint numFileNames;
-  ///   uint fileNamePtrs[numFileNames];
-  ///   uint numFiles;
-  ///   if(version > 3)
-  ///     FILERECORD fileRecords[numFiles];
-  ///   else
-  ///     FILERECORD32 fileRecords[numFiles];
-  /// } ARKHDR;
-  /// </remarks>
   public class ArkPackage : AbstractPackage
   {
+    readonly static uint HIGHEST_VERSION = 7;
+    readonly static uint LOWEST_VERSION = 3;
+
     private ArkDirectory root;
     private Stream[] contentFiles;
     private MultiStream contentFileMeta;
@@ -103,7 +47,7 @@ namespace GameArchives.Ark
       {
         s.Position = 0;
         uint version = s.ReadUInt32LE();
-        if (version > 6)
+        if (version > HIGHEST_VERSION)
         {
           // hdr is encrypted, probably
           using (var decryptor = new HdrCryptStream(s))
@@ -111,7 +55,8 @@ namespace GameArchives.Ark
             version = decryptor.ReadUInt32LE();
           }
         }
-        return version <= 6 && version >= 3 ? PackageTestResult.YES : PackageTestResult.NO;
+        return version <= HIGHEST_VERSION 
+          && version >= LOWEST_VERSION ? PackageTestResult.YES : PackageTestResult.NO;
       }
     }
 
@@ -137,7 +82,7 @@ namespace GameArchives.Ark
       {
         Stream actualHdr = hdr;
         uint version = hdr.ReadUInt32LE();
-        if(version > 6)
+        if(version > HIGHEST_VERSION)
         {
           // hdr is encrypted, probably
           using (var decryptor = new HdrCryptStream(hdr))
@@ -154,7 +99,7 @@ namespace GameArchives.Ark
 
     private void readHeader(Stream header, IFile hdrFile, uint version, bool brokenv5 = false)
     {
-      if (version == 6) // Version 6 has some sort of hash/key at the beginning?
+      if (version >= 6) // Versions 6,7 have some sort of hash/key at the beginning?
       {
         header.Seek(4 + 16, SeekOrigin.Current); // skip unknown data
       }
@@ -196,8 +141,8 @@ namespace GameArchives.Ark
           contentFiles[i] = arkFile.GetStream();
         }
 
-        // Version 6: appears to checksums or something for each content file
-        if (version == 6) 
+        // Versions 6,7: appear to have checksums or something for each content file?
+        if (version >= 6) 
         { 
           uint numChecksums = header.ReadUInt32LE();
           header.Seek(4 * numChecksums, SeekOrigin.Current);
@@ -214,6 +159,18 @@ namespace GameArchives.Ark
       }
 
       contentFileMeta = new MultiStream(contentFiles);
+
+      // new in version 7: some sort of string table with game-specific data
+      if(version == 7)
+      {
+        uint root_count = header.ReadUInt32LE();
+        while(root_count-- > 0)
+        {
+          uint num_strs = header.ReadUInt32LE();
+          while (num_strs-- > 0) // skip past strings because we don't need them.
+            header.Seek(header.ReadUInt32LE(), SeekOrigin.Current);
+        }
+      }
 
       // All versions: read file tables.
       uint fileNameTableSize = header.ReadUInt32LE();
@@ -264,8 +221,10 @@ namespace GameArchives.Ark
         int filenameStringId = header.ReadInt32LE();
         uint dirStringId = header.ReadUInt32LE();
         uint size = header.ReadUInt32LE();
-        uint zero = header.ReadUInt32LE();
-        if (zero == 0)
+        uint zero = header.ReadUInt32LE(); 
+        // Version 7 uses this differently. now, files marked as 0 should be skipped,
+        // while NON-zero values mean real files. I think.
+        if ((version == 7 && zero != 0) || (version != 7 && zero == 0))
         {
           ArkDirectory parent = makeOrGetDir(fileNames[dirStringId]);
           parent.AddFile(new ArkFile(contentFileMeta, arkFileOffset, size, fileNames[filenameStringId], parent));
