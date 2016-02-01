@@ -2,15 +2,16 @@
 C# Library for reading video game archives, and example file browser ("ArchiveExplorer").
 
 ## Supported Archive Formats
-### Ark (*.hdr)
+### Ark (*.hdr, *.ark)
 This format is used in many Harmonix games, including but not limited to:
+* Amplitude (the PS2 version)
 * Guitar Hero 1 - 2, Encore: Rocks the 80s
 * Rock Band 1 - 3, Lego, Green Day, Beatles
 * Karaoke Revolution (untested)
 * MAGMA (RBN Authoring Tool, PC)
 * Disney Fantasia: Music Evolved
 
-Versions 3 through 7 are supported at this time.
+Versions 2 through 7 are supported at this time.
 
 ### FSG-FILE-SYSTEM (DISC0.img)
 This format is used in some FreeStyleGames games, including:

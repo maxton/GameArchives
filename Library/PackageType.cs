@@ -64,29 +64,48 @@ namespace GameArchives
       Load = load;
     }
 
-    public static PackageType[] Types =>
-    new PackageType[] {
-      new PackageType("Ark/Hdr Package", 
-        new string[] { "*.hdr" }, 
-        Ark.ArkPackage.IsArk,
-        Ark.ArkPackage.OpenFile),
-      new PackageType("STFS Package",
-        new string[] { "*.*" },
-        STFS.STFSPackage.IsSTFS, 
-        STFS.STFSPackage.OpenFile),
-      new PackageType("FSAR Archive", 
-        new string[] { "*.far" }, 
-        FSAR.FSARPackage.IsFSAR, 
-        FSAR.FSARPackage.FromFile),
-      new PackageType("FSG-FILE-SYSTEM",
-        new string[] { "*.img", "*.img.part000", "*.img.part0" },
-        FSGIMG.FSGIMGPackage.IsFSGIMG,
-        FSGIMG.FSGIMGPackage.OpenFile),
-      new PackageType("XBOX/Xbox360 ISO",
-        new string[] { "*.iso" },
-        XISO.XISOPackage.IsXISO,
-        XISO.XISOPackage.OpenFile),
-      //new PackageType("", new string[] { }, null, null, null)
-    };
+    public static readonly ICollection<PackageType> Types;
+
+    /// <summary>
+    /// Add an archive package type to the supported types.
+    /// </summary>
+    /// <param name="name">Friendly name for the package type</param>
+    /// <param name="extensions">String-array of typical file extensions, formatted
+    /// as *.ext</param>
+    /// <param name="file">Function which, given a file, returns a PackageTestResult
+    /// which tells if the file is of that package type.</param>
+    /// <param name="load">Function which loads the package.</param>
+    public static void AddType(string name, string[] extensions,
+      Func<IFile, PackageTestResult> file, Func<IFile, AbstractPackage> load)
+    {
+      Types.Add(new PackageType(name, extensions, file, load));
+    }
+
+    static PackageType()
+    {
+      Types = new List<PackageType> {
+                new PackageType("Ark/Hdr Package",
+                  new string[] { "*.ark","*.hdr" },
+                  Ark.ArkPackage.IsArk,
+                  Ark.ArkPackage.OpenFile),
+                new PackageType("STFS Package",
+                  new string[] { "*.*" },
+                  STFS.STFSPackage.IsSTFS,
+                  STFS.STFSPackage.OpenFile),
+                new PackageType("FSAR Archive",
+                  new string[] { "*.far" },
+                  FSAR.FSARPackage.IsFSAR,
+                  FSAR.FSARPackage.FromFile),
+                new PackageType("FSG-FILE-SYSTEM",
+                  new string[] { "*.img", "*.img.part000", "*.img.part0" },
+                  FSGIMG.FSGIMGPackage.IsFSGIMG,
+                  FSGIMG.FSGIMGPackage.OpenFile),
+                new PackageType("XBOX/Xbox360 ISO",
+                  new string[] { "*.iso" },
+                  XISO.XISOPackage.IsXISO,
+                  XISO.XISOPackage.OpenFile)
+              //new PackageType("", new string[] { }, null, null, null)
+              };
+    }
   }
 }

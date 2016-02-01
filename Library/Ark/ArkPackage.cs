@@ -29,13 +29,18 @@ namespace GameArchives.Ark
   public class ArkPackage : AbstractPackage
   {
     readonly static uint HIGHEST_VERSION = 7;
-    readonly static uint LOWEST_VERSION = 3;
+    readonly static uint LOWEST_VERSION = 2;
 
     private ArkDirectory root;
     private Stream[] contentFiles;
-    private MultiStream contentFileMeta;
+    private Stream contentFileMeta;
     private long[] arkFileSizes;
     private long totalArkFileSizes;
+
+    // used for parsing
+    private long fileNameTableOffset;
+    private long fileNameTableSize;
+    private long numFileNames;
 
     public override string FileName { get; }
     public override IDirectory RootDirectory => root;
@@ -56,18 +61,13 @@ namespace GameArchives.Ark
           }
         }
         return version <= HIGHEST_VERSION 
-          && version >= LOWEST_VERSION ? PackageTestResult.YES : PackageTestResult.NO;
+          && version >= LOWEST_VERSION ? PackageTestResult.MAYBE : PackageTestResult.NO;
       }
     }
 
     public static ArkPackage OpenFile(IFile f)
     {
       return new ArkPackage(f);
-    }
-
-    public static ArkPackage FromStream(Stream fs)
-    {
-      throw new NotSupportedException("Can't read ark packages from a stream.");
     }
 
     /// <summary>
@@ -93,75 +93,89 @@ namespace GameArchives.Ark
           }
           version = actualHdr.ReadUInt32LE();
         }
-        readHeader(actualHdr, hdrFile, version);
+
+        if (version <= HIGHEST_VERSION && version >= LOWEST_VERSION)
+          readHeader(actualHdr, hdrFile, version);
+        else
+          throw new NotSupportedException($"Given ark file is not supported. (version {version}).");
       }
     }
 
-    private void readHeader(Stream header, IFile hdrFile, uint version, bool brokenv5 = false)
+    private void readHeader(Stream header, IFile hdrFile, uint version, bool brokenv4 = false)
     {
       if (version >= 6) // Versions 6,7 have some sort of hash/key at the beginning?
       {
         header.Seek(4 + 16, SeekOrigin.Current); // skip unknown data
       }
 
-      // Common: two counts of .ark files
-      int numArks = header.ReadInt32LE();
-      int numArks2 = header.ReadInt32LE();
-      if (numArks != numArks2)
+      if (version > 2)
       {
-        throw new InvalidDataException("Ark header appears to be invalid (.ark count mismatch).");
-      }
-      arkFileSizes = new long[numArks];
-      for (var i = 0; i < numArks; i++)
-      {
-        // All versions except 4 use 32-bit file sizes.
-        arkFileSizes[i] = (version == 4 ? header.ReadInt64LE() : header.ReadInt32LE());
-        if(version == 4 && arkFileSizes[i] > UInt32.MaxValue) 
-        {
-          // RB TrackPack Classic has a broken v4, really a v5 mixed with v3
-          header.Position = 4;
-          readHeader(header, hdrFile, 5, true);
-          return;
-        }
-        totalArkFileSizes += arkFileSizes[i];
-      }
-
-      // Version 5+: List of .ark file paths (from root of game disc)
-      if (version >= 5)
-      {
-        int numArkPaths = header.ReadInt32LE();
-        if (numArkPaths != numArks)
+        // Version 3+: two counts of .ark files
+        int numArks = header.ReadInt32LE();
+        int numArks2 = header.ReadInt32LE();
+        if (numArks != numArks2)
         {
           throw new InvalidDataException("Ark header appears to be invalid (.ark count mismatch).");
         }
-        contentFiles = new Stream[numArks];
-        for (var i = 0; i < numArkPaths; i++)
+        arkFileSizes = new long[numArks];
+        for (var i = 0; i < numArks; i++)
         {
-          IFile arkFile = hdrFile.Parent.GetFile(header.ReadLengthUTF8().Split('/').Last());
-          contentFiles[i] = arkFile.GetStream();
+          // All versions except 4 use 32-bit file sizes.
+          arkFileSizes[i] = (version == 4 ? header.ReadInt64LE() : header.ReadInt32LE());
+          if (version == 4 && arkFileSizes[i] > UInt32.MaxValue)
+          {
+            // RB TrackPack Classic has a broken v4, really a v5 mixed with v3
+            header.Position = 4;
+            readHeader(header, hdrFile, 5, true);
+            return;
+          }
+          totalArkFileSizes += arkFileSizes[i];
         }
 
-        // Versions 6,7: appear to have checksums or something for each content file?
-        if (version >= 6) 
-        { 
-          uint numChecksums = header.ReadUInt32LE();
-          header.Seek(4 * numChecksums, SeekOrigin.Current);
+        // Version 5+: List of .ark file paths (from root of game disc)
+        if (version >= 5)
+        {
+          int numArkPaths = header.ReadInt32LE();
+          if (numArkPaths != numArks)
+          {
+            throw new InvalidDataException("Ark header appears to be invalid (.ark count mismatch).");
+          }
+          contentFiles = new Stream[numArks];
+          for (var i = 0; i < numArkPaths; i++)
+          {
+            IFile arkFile = hdrFile.Parent.GetFile(header.ReadLengthUTF8().Split('/').Last());
+            contentFiles[i] = arkFile.GetStream();
+          }
+
+          // Versions 6,7: appear to have checksums or something for each content file?
+          if (version >= 6)
+          {
+            uint numChecksums = header.ReadUInt32LE();
+            header.Seek(4 * numChecksums, SeekOrigin.Current);
+          }
         }
+        else // Versions <5: Just infer the .ark paths based on the .hdr filename.
+        {
+          contentFiles = new Stream[numArks];
+          for (var i = 0; i < numArks2; i++)
+          {
+            IFile arkFile = hdrFile.Parent.GetFile(hdrFile.Name.Substring(0, hdrFile.Name.Length - 4) + "_" + i + ".ark");
+            contentFiles[i] = arkFile.GetStream();
+          }
+        }
+
+        contentFileMeta = new MultiStream(contentFiles);
       }
-      else // Versions <5: Just infer the .ark paths based on the .hdr filename.
+      else
       {
-        contentFiles = new Stream[numArks];
-        for (var i = 0; i < numArks2; i++)
-        {
-          IFile arkFile = hdrFile.Parent.GetFile(hdrFile.Name.Substring(0, hdrFile.Name.Length - 4) + "_" + i + ".ark");
-          contentFiles[i] = arkFile.GetStream();
-        }
+        // Version 2: Here be file records. Skip 'em for now.
+        uint numRecords = header.ReadUInt32LE();
+        header.Seek(numRecords * 20, SeekOrigin.Current);
+        contentFileMeta = hdrFile.GetStream();
       }
-
-      contentFileMeta = new MultiStream(contentFiles);
 
       // new in version 7: some sort of string table with game-specific data
-      if(version == 7)
+      if (version == 7)
       {
         uint root_count = header.ReadUInt32LE();
         while(root_count-- > 0)
@@ -172,18 +186,58 @@ namespace GameArchives.Ark
         }
       }
 
-      // All versions: read file tables.
-      uint fileNameTableSize = header.ReadUInt32LE();
+      // All versions: string table and string offset table
+      string[] fileNames = readFileNames(header);
+
+      if (version > 2)
+      {
+        // Version 3+:
+        // Go to end of the filename pointer table which we already read
+        //               filename blob               filename pointer table
+        header.Seek(fileNameTableOffset + fileNameTableSize + 4 + 4 * numFileNames, SeekOrigin.Begin);
+      }
+      else
+      {
+        // Version 2: still at beginning of file. (after version number ofc)
+        header.Seek(4, SeekOrigin.Begin);
+      }
+      // Now the number of *actual* files in the archive.
+      // Directories are not explicitly stored. Rather, they are inferred
+      // by the path string each file has, which tells you in which folder
+      // the file lives.
+      uint numFiles = header.ReadUInt32LE();
+      root = new ArkDirectory(null, ROOT_DIR);
+      for (var i = 0; i < numFiles; i++)
+      {
+        // Version 3 uses 32-bit file offsets
+        long arkFileOffset = (brokenv4 || version <= 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
+        int filenameStringId = header.ReadInt32LE();
+        int dirStringId = header.ReadInt32LE();
+        uint size = header.ReadUInt32LE();
+        uint zero = header.ReadUInt32LE(); 
+        // Version 7 uses this differently. now, files marked as 0 should be skipped,
+        // while NON-zero values mean real files. I think.
+        if ((version == 7 && zero != 0) || (version != 7 && zero == 0))
+        {
+          ArkDirectory parent = dirStringId > 0 ? makeOrGetDir(fileNames[dirStringId]) : root;
+          parent.AddFile(new ArkFile(contentFileMeta, arkFileOffset, size, fileNames[filenameStringId], parent));
+        }
+      }
+    }
+
+    private string[] readFileNames(Stream header)
+    {
+      fileNameTableSize = header.ReadUInt32LE();
 
       // Save position of filename table for later.
-      long tableOffset = header.Position;
+      fileNameTableOffset = header.Position;
       // Skip past filename table, since we don't yet know where all the strings are
       header.Seek(fileNameTableSize, SeekOrigin.Current);
 
       // Rather than read all filenames with their offsets, we read all the
       // offsets first, then read the filenames. This saves a lot of seeking
       // back-and-forth within the header.
-      uint numFileNames = header.ReadUInt32LE();
+      numFileNames = header.ReadUInt32LE();
       if (numFileNames > fileNameTableSize)
       {
         throw new InvalidDataException("Ark header appears to be invalid (number of filenames exceeds filename table size).");
@@ -198,38 +252,13 @@ namespace GameArchives.Ark
       {
         if (fileNameOffsets[i] != 0)
         {
-          header.Seek(tableOffset + fileNameOffsets[i], SeekOrigin.Begin);
+          header.Seek(fileNameTableOffset + fileNameOffsets[i], SeekOrigin.Begin);
           fileNames[i] = header.ReadASCIINullTerminated();
         }
         else
           fileNames[i] = null;
       }
-      // Go to end of the filename pointer table which we already read
-      //               filename blob               filename pointer table
-      header.Seek(tableOffset + fileNameTableSize + 4 + 4 * numFileNames, SeekOrigin.Begin);
-
-      // Now the number of *actual* files in the archive.
-      // Directories are not explicitly stored. Rather, they are inferred
-      // by the path string each file has, which tells you in which folder
-      // the file lives.
-      uint numFiles = header.ReadUInt32LE();
-      root = new ArkDirectory(null, ROOT_DIR);
-      for (var i = 0; i < numFiles; i++)
-      {
-        // Version 3 uses 32-bit file offsets
-        long arkFileOffset = (brokenv5 || version == 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
-        int filenameStringId = header.ReadInt32LE();
-        uint dirStringId = header.ReadUInt32LE();
-        uint size = header.ReadUInt32LE();
-        uint zero = header.ReadUInt32LE(); 
-        // Version 7 uses this differently. now, files marked as 0 should be skipped,
-        // while NON-zero values mean real files. I think.
-        if ((version == 7 && zero != 0) || (version != 7 && zero == 0))
-        {
-          ArkDirectory parent = makeOrGetDir(fileNames[dirStringId]);
-          parent.AddFile(new ArkFile(contentFileMeta, arkFileOffset, size, fileNames[filenameStringId], parent));
-        }
-      }
+      return fileNames;
     }
 
     /// <summary>
