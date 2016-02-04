@@ -168,5 +168,10 @@ namespace ArchiveExplorer
           .First().Controls[0] as PackageView).Unload();
       }
     }
+
+    private void gitHubToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      System.Diagnostics.Process.Start("https://github.com/maxton/GameArchives");
+    }
   }
 }

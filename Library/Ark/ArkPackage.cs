@@ -30,6 +30,7 @@ namespace GameArchives.Ark
   {
     readonly static uint HIGHEST_VERSION = 7;
     readonly static uint LOWEST_VERSION = 2;
+    readonly static uint ARK = 0x4B5241;
 
     private ArkDirectory root;
     private Stream[] contentFiles;
@@ -52,6 +53,10 @@ namespace GameArchives.Ark
       {
         s.Position = 0;
         uint version = s.ReadUInt32LE();
+        if (version == ARK) // header from Frequency
+        {
+          return PackageTestResult.YES;
+        }
         if (version > HIGHEST_VERSION)
         {
           // hdr is encrypted, probably
@@ -82,7 +87,7 @@ namespace GameArchives.Ark
       {
         Stream actualHdr = hdr;
         uint version = hdr.ReadUInt32LE();
-        if(version > HIGHEST_VERSION)
+        if(version > HIGHEST_VERSION && version != ARK)
         {
           // hdr is encrypted, probably
           using (var decryptor = new HdrCryptStream(hdr))
@@ -93,8 +98,9 @@ namespace GameArchives.Ark
           }
           version = actualHdr.ReadUInt32LE();
         }
-
-        if (version <= HIGHEST_VERSION && version >= LOWEST_VERSION)
+        if (version == ARK)
+          readOldArkHeader(hdrFile, actualHdr);
+        else if (version <= HIGHEST_VERSION && version >= LOWEST_VERSION)
           readHeader(actualHdr, hdrFile, version);
         else
           throw new NotSupportedException($"Given ark file is not supported. (version {version}).");
@@ -103,6 +109,7 @@ namespace GameArchives.Ark
 
     private void readHeader(Stream header, IFile hdrFile, uint version, bool brokenv4 = false)
     {
+      root = new ArkDirectory(null, ROOT_DIR);
       if (version >= 6) // Versions 6,7 have some sort of hash/key at the beginning?
       {
         header.Seek(4 + 16, SeekOrigin.Current); // skip unknown data
@@ -163,32 +170,68 @@ namespace GameArchives.Ark
             contentFiles[i] = arkFile.GetStream();
           }
         }
-
         contentFileMeta = new MultiStream(contentFiles);
+
+        // new in version 7: some sort of string table with game-specific data
+        if (version == 7)
+        {
+          uint root_count = header.ReadUInt32LE();
+          while (root_count-- > 0)
+          {
+            uint num_strs = header.ReadUInt32LE();
+            while (num_strs-- > 0) // skip past strings because we don't need them.
+              header.Seek(header.ReadUInt32LE(), SeekOrigin.Current);
+          }
+        }
+        readFileTable(header, version, brokenv4);
       }
-      else
+      else if (version == 2)
       {
         // Version 2: Here be file records. Skip 'em for now.
         uint numRecords = header.ReadUInt32LE();
         header.Seek(numRecords * 20, SeekOrigin.Current);
         contentFileMeta = hdrFile.GetStream();
+        readFileTable(header, version, brokenv4);
       }
+    }
 
-      // new in version 7: some sort of string table with game-specific data
-      if (version == 7)
+    private void readOldArkHeader(IFile hdrFile, Stream header)
+    {
+      root = new ArkDirectory(null, ROOT_DIR);
+      contentFileMeta = hdrFile.GetStream();
+      header.Position = 8;
+      long fileTableOffset = header.ReadUInt32LE();
+      uint numFiles = header.ReadUInt32LE();
+      long dirTableOffset = header.ReadUInt32LE();
+      string[] dirs = new string[header.ReadUInt32LE()];
+      header.Position = 0x24;
+      long blockSize = header.ReadUInt32LE();
+      header.Position = dirTableOffset;
+      for(int dir = 0; dir < dirs.Length; dir++)
       {
-        uint root_count = header.ReadUInt32LE();
-        while(root_count-- > 0)
-        {
-          uint num_strs = header.ReadUInt32LE();
-          while (num_strs-- > 0) // skip past strings because we don't need them.
-            header.Seek(header.ReadUInt32LE(), SeekOrigin.Current);
-        }
+        header.Position = dirTableOffset + (8 * dir) + 4;
+        header.Position = header.ReadUInt32LE();
+        dirs[dir] = header.ReadASCIINullTerminated();
       }
+      for(int file = 0; file < numFiles; file++)
+      {
+        header.Position = fileTableOffset + (24 * file) + 4;
+        long filenameOffset = header.ReadUInt32LE();
+        int dir = header.ReadUInt16LE();
+        uint blockOffset = header.ReadUInt16LE();
+        uint block = header.ReadUInt32LE();
+        uint compressedSize = header.ReadUInt32LE();
+        header.Position = filenameOffset;
+        string filename = header.ReadASCIINullTerminated();
+        ArkDirectory parent = dir > 0 ? makeOrGetDir(dirs[dir]) : root;
+        parent.AddFile(new ArkFile(contentFileMeta, block * blockSize + blockOffset,
+          compressedSize, filename, parent));
+      }
+    }
 
-      // All versions: string table and string offset table
+    private void readFileTable(Stream header, uint version, bool brokenv4)
+    {
       string[] fileNames = readFileNames(header);
-
       if (version > 2)
       {
         // Version 3+:
@@ -206,7 +249,6 @@ namespace GameArchives.Ark
       // by the path string each file has, which tells you in which folder
       // the file lives.
       uint numFiles = header.ReadUInt32LE();
-      root = new ArkDirectory(null, ROOT_DIR);
       for (var i = 0; i < numFiles; i++)
       {
         // Version 3 uses 32-bit file offsets
@@ -214,7 +256,7 @@ namespace GameArchives.Ark
         int filenameStringId = header.ReadInt32LE();
         int dirStringId = header.ReadInt32LE();
         uint size = header.ReadUInt32LE();
-        uint zero = header.ReadUInt32LE(); 
+        uint zero = header.ReadUInt32LE();
         // Version 7 uses this differently. now, files marked as 0 should be skipped,
         // while NON-zero values mean real files. I think.
         if ((version == 7 && zero != 0) || (version != 7 && zero == 0))
@@ -304,11 +346,8 @@ namespace GameArchives.Ark
         {
           // TODO: dispose managed state (managed objects).
         }
-        foreach(var i in contentFiles)
-        {
-          i.Close();
-          i.Dispose();
-        }
+        contentFileMeta.Close();
+        contentFileMeta.Dispose();
         // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
         // TODO: set large fields to null.
 

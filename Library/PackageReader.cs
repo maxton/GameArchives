@@ -28,8 +28,8 @@ namespace GameArchives
   public enum PackageTestResult
   {
     NO,
-    YES,
-    MAYBE
+    MAYBE,
+    YES
   };
   public class PackageReader
   {

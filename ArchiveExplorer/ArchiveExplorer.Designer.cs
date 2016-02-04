@@ -37,10 +37,11 @@
       this.detailsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.iconsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.listToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      this.gitHubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.tabControl1 = new System.Windows.Forms.TabControl();
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-      this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
       this.spinnerLabel = new System.Windows.Forms.ToolStripStatusLabel();
+      this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
       this.menuStrip1.SuspendLayout();
       this.statusStrip1.SuspendLayout();
       this.SuspendLayout();
@@ -49,7 +50,8 @@
       // 
       this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.viewToolStripMenuItem});
+            this.viewToolStripMenuItem,
+            this.gitHubToolStripMenuItem});
       this.menuStrip1.Location = new System.Drawing.Point(0, 0);
       this.menuStrip1.Name = "menuStrip1";
       this.menuStrip1.Size = new System.Drawing.Size(480, 24);
@@ -120,6 +122,13 @@
       this.listToolStripMenuItem.Text = "List";
       this.listToolStripMenuItem.Click += new System.EventHandler(this.listToolStripMenuItem_Click);
       // 
+      // gitHubToolStripMenuItem
+      // 
+      this.gitHubToolStripMenuItem.Name = "gitHubToolStripMenuItem";
+      this.gitHubToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
+      this.gitHubToolStripMenuItem.Text = "GitHub";
+      this.gitHubToolStripMenuItem.Click += new System.EventHandler(this.gitHubToolStripMenuItem_Click);
+      // 
       // tabControl1
       // 
       this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -144,18 +153,18 @@
       this.statusStrip1.TabIndex = 2;
       this.statusStrip1.Text = "statusStrip1";
       // 
-      // toolStripStatusLabel1
-      // 
-      this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-      this.toolStripStatusLabel1.Size = new System.Drawing.Size(42, 17);
-      this.toolStripStatusLabel1.Text = "Ready.";
-      // 
       // spinnerLabel
       // 
       this.spinnerLabel.Image = global::ArchiveExplorer.Properties.Resources.spinner;
       this.spinnerLabel.Name = "spinnerLabel";
       this.spinnerLabel.Size = new System.Drawing.Size(16, 17);
       this.spinnerLabel.Visible = false;
+      // 
+      // toolStripStatusLabel1
+      // 
+      this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+      this.toolStripStatusLabel1.Size = new System.Drawing.Size(42, 17);
+      this.toolStripStatusLabel1.Text = "Ready.";
       // 
       // ArchiveExplorer
       // 
@@ -192,6 +201,7 @@
     private System.Windows.Forms.StatusStrip statusStrip1;
     private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
     private System.Windows.Forms.ToolStripStatusLabel spinnerLabel;
+    private System.Windows.Forms.ToolStripMenuItem gitHubToolStripMenuItem;
   }
 }
 
