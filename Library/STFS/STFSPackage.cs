@@ -20,7 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
 using System.IO;
 
 namespace GameArchives.STFS
@@ -128,15 +127,17 @@ namespace GameArchives.STFS
     /// </summary>
     public bool Disposed => disposed;
 
+#if !MINIMAL
     /// <summary>
     /// The content thumbnail of this package.
     /// </summary>
-    public Image Thumbnail { get; }
+    public System.Drawing.Image Thumbnail { get; }
 
     /// <summary>
     /// The title thumbnail for this package.
     /// </summary>
-    public Image TitleThumbnail { get; }
+    public System.Drawing.Image TitleThumbnail { get; }
+#endif
 
     /// <summary>
     /// The filename of this package.
@@ -229,16 +230,18 @@ namespace GameArchives.STFS
       stream.Position = 0x39D;
       fileCount = stream.ReadInt32LE();
 
+#if !MINIMAL
       // Read both package thumbnails into Image instances
       stream.Position = 0x1712;
       int thumbnailImgSize = stream.ReadInt32BE();
       int titleThumbnailImgSize = stream.ReadInt32BE();
       stream.Position = 0x171A;
       if(thumbnailImgSize > 0)
-        Thumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(thumbnailImgSize)));
+        Thumbnail = System.Drawing.Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(thumbnailImgSize)));
       stream.Position = 0x571A;
       if(titleThumbnailImgSize > 0)
-        TitleThumbnail = Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(titleThumbnailImgSize)));
+        TitleThumbnail = System.Drawing.Image.FromStream(new System.IO.MemoryStream(stream.ReadBytes(titleThumbnailImgSize)));
+#endif
 
       root = new STFSDirectory(null, ROOT_DIR);
       var dirsOrdinal = new Dictionary<int, STFSDirectory>();

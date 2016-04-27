@@ -22,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace GameArchives.Local
@@ -48,17 +47,13 @@ namespace GameArchives.Local
       {
         throw new ArgumentException("Given path must point to directory, not file.");
       }
-      foreach(string f in Directory.EnumerateFiles(path))
-      {
-        AddFile(new LocalFile(this, f));
-      }
     }
     
     public override ICollection<IDirectory> Dirs {
       get
       {
         if (dirsFilled) { return dirs.Values; }
-        foreach(string d in Directory.EnumerateDirectories(path))
+        foreach(string d in Directory.GetDirectories(path))
         {
           IDirectory tmp = new LocalDirectory(d);
           AddDir(tmp);
@@ -78,6 +73,21 @@ namespace GameArchives.Local
       {
         dir = new LocalDirectory(Path.Combine(path, name));
         AddDir(dir);
+        return true;
+      }
+      return false;
+    }
+
+    public override bool TryGetFile(string name, out IFile file)
+    {
+      if (files.TryGetValue(name, out file))
+      {
+        return true;
+      }
+      else if (File.Exists(Path.Combine(path, name)))
+      {
+        file = new LocalFile(this, Path.Combine(path, name));
+        AddFile(file);
         return true;
       }
       return false;

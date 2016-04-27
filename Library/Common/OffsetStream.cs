@@ -26,7 +26,7 @@ namespace GameArchives.Common
   /// A stream based on another stream, useful for representing
   /// file streams within simple archive packages.
   /// </summary>
-  class OffsetStream : Stream
+  public class OffsetStream : Stream
   {
     public override bool CanRead => true;
 
@@ -59,7 +59,7 @@ namespace GameArchives.Common
     /// <param name="package">The base stream</param>
     /// <param name="offset">Offset into the base stream where this stream starts</param>
     /// <param name="length">Number of bytes in this stream</param>
-    internal OffsetStream(Stream package, long offset, long length)
+    public OffsetStream(Stream package, long offset, long length)
     {
       this.pkg = package;
       this.data_offset = offset;
