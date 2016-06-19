@@ -17,6 +17,7 @@
  * License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
+using GameArchives.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -125,7 +126,7 @@ namespace GameArchives.XISO
       }
       else
       {
-        parent.AddFile(new XISOFile(entry.name, parent, stream, partitionOffset + entry.sector * sectorLength, entry.length));
+        parent.AddFile(new OffsetFile(entry.name, parent, stream, partitionOffset + entry.sector * sectorLength, entry.length));
       }
       if(entry.left != 0)
       {

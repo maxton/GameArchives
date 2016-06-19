@@ -224,8 +224,8 @@ namespace GameArchives.Ark
         header.Position = filenameOffset;
         string filename = header.ReadASCIINullTerminated();
         ArkDirectory parent = dir > 0 ? makeOrGetDir(dirs[dir]) : root;
-        parent.AddFile(new ArkFile(contentFileMeta, block * blockSize + blockOffset,
-          compressedSize, filename, parent));
+        parent.AddFile(new OffsetFile(filename, parent, contentFileMeta, block * blockSize + blockOffset,
+          compressedSize));
       }
     }
 
@@ -262,7 +262,7 @@ namespace GameArchives.Ark
         if ((version == 7 && zero != 0) || (version != 7 && zero == 0))
         {
           ArkDirectory parent = dirStringId > 0 ? makeOrGetDir(fileNames[dirStringId]) : root;
-          parent.AddFile(new ArkFile(contentFileMeta, arkFileOffset, size, fileNames[filenameStringId], parent));
+          parent.AddFile(new OffsetFile(fileNames[filenameStringId], parent, contentFileMeta, arkFileOffset, size));
         }
       }
     }

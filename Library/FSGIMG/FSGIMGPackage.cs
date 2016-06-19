@@ -136,7 +136,7 @@ namespace GameArchives.FSGIMG
         }
         else if (filename[0] == 'F')
         {
-          ret.AddFile(new FSGIMGFile(real_name, ret, filestream, desc.data_offset, desc.size));
+          ret.AddFile(new OffsetFile(real_name, ret, filestream, desc.data_offset, desc.size));
         }
         else
         {

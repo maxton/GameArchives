@@ -46,16 +46,15 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" Condition="
-'$(Configuration)' != 'Release-minimal' " />
+    <Reference Include="System.Drawing" Condition="&#xD;&#xA;'$(Configuration)' != 'Release-minimal' " />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchiveInterfaces.cs" />
     <Compile Include="Ark\ArkDirectory.cs" />
-    <Compile Include="Ark\ArkFile.cs" />
     <Compile Include="Ark\ArkPackage.cs" />
     <Compile Include="Ark\DtbCryptStream.cs" />
     <Compile Include="Common\DefaultDirectory.cs" />
+    <Compile Include="Common\OffsetFile.cs" />
     <Compile Include="Common\MultiStream.cs" />
     <Compile Include="Common\OffsetStream.cs" />
     <Compile Include="Local\LocalDirectory.cs" />
@@ -65,7 +64,6 @@
     <Compile Include="FSAR\FSARFile.cs" />
     <Compile Include="FSAR\FSARPackage.cs" />
     <Compile Include="FSGIMG\FSGIMGDirectory.cs" />
-    <Compile Include="FSGIMG\FSGIMGFile.cs" />
     <Compile Include="FSGIMG\FSGIMGPackage.cs" />
     <Compile Include="PackageType.cs" />
     <Compile Include="STFS\STFSDirectory.cs" />
@@ -75,7 +73,6 @@
     <Compile Include="Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XISO\XISODirectory.cs" />
-    <Compile Include="XISO\XISOFile.cs" />
     <Compile Include="XISO\XISOPackage.cs" />
   </ItemGroup>
   <ItemGroup>

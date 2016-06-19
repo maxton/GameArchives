@@ -1,7 +1,7 @@
 ﻿/*
- * FSGIMGFile.cs
+ * OffsetFile.cs
  * 
- * Copyright (c) 2015,2016, maxton. All rights reserved.
+ * Copyright (c) 2016, maxton. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,18 @@
  * License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-using GameArchives.Common;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 
-namespace GameArchives.FSGIMG
+namespace GameArchives.Common
 {
-  class FSGIMGFile : IFile
+  /// <summary>
+  /// An uncompressed file which is simply a number of bytes at a certain offset in a stream.
+  /// </summary>
+  class OffsetFile : IFile
   {
     public bool Compressed => false;
     public long CompressedSize => Size;
@@ -33,7 +39,15 @@ namespace GameArchives.FSGIMG
     private Stream img_file;
     private long data_offset;
 
-    public FSGIMGFile(string name, IDirectory parent, Stream img, long offset, long size)
+    /// <summary>
+    /// Constructs a new OffsetFile
+    /// </summary>
+    /// <param name="name">The name of the file, including extension</param>
+    /// <param name="parent">The directory in which this file resides</param>
+    /// <param name="img">Stream which contains this file</param>
+    /// <param name="offset">Offset into the stream at which the file starts</param>
+    /// <param name="size">Length in bytes of the file</param>
+    public OffsetFile(string name, IDirectory parent, Stream img, long offset, long size)
     {
       Name = name;
       Parent = parent;
@@ -44,8 +58,12 @@ namespace GameArchives.FSGIMG
 
     public byte[] GetBytes()
     {
-      //TODO: support sizes > 2GiB
-      return GetStream().ReadBytes((int)Size);
+      byte[] bytes;
+      using (var stream = this.GetStream())
+      {
+        bytes = stream.ReadBytes((int)Size);
+      }
+      return bytes;
     }
 
     public Stream GetStream()
