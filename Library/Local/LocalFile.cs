@@ -35,6 +35,8 @@ namespace GameArchives.Local
     public string Name { get; }
     public IDirectory Parent { get; }
 
+    public IDictionary<string, object> ExtendedInfo { get; }
+
     private string path;
 
     internal LocalFile(IDirectory parent, string path)
@@ -43,6 +45,7 @@ namespace GameArchives.Local
       this.path = path;
       Size = new FileInfo(path).Length;
       this.Name = Path.GetFileName(path);
+      ExtendedInfo = new Dictionary<string, object>();
     }
 
     public byte[] GetBytes()

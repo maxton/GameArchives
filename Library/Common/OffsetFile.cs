@@ -28,10 +28,11 @@ namespace GameArchives.Common
   /// <summary>
   /// An uncompressed file which is simply a number of bytes at a certain offset in a stream.
   /// </summary>
-  class OffsetFile : IFile
+  public class OffsetFile : IFile
   {
     public bool Compressed => false;
     public long CompressedSize => Size;
+    public IDictionary<string, object> ExtendedInfo { get; }
     public string Name { get; }
     public IDirectory Parent { get; }
     public long Size { get; }
@@ -54,6 +55,7 @@ namespace GameArchives.Common
       Size = size;
       img_file = img;
       data_offset = offset;
+      ExtendedInfo = new Dictionary<string, object>();
     }
 
     public byte[] GetBytes()

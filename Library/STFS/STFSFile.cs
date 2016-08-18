@@ -18,6 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Collections.Generic;
 
 namespace GameArchives.STFS
 {
@@ -36,6 +37,7 @@ namespace GameArchives.STFS
 
     public long CompressedSize => Size;
 
+    public IDictionary<string, object> ExtendedInfo { get; }
 
     STFSPackage container;
     int[] dataBlocks;
@@ -52,6 +54,7 @@ namespace GameArchives.STFS
       if(numBlocks > 0)
         startBlock = dataBlocks[0];
       this.container = container;
+      ExtendedInfo = new Dictionary<string, object>();
     }
 
     internal STFSFile(string name, uint size, int startBlock, int numBlocks, STFSDirectory parent, STFSPackage container)

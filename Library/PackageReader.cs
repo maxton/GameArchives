@@ -20,18 +20,33 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace GameArchives
 {
+  /// <summary>
+  /// The result of a package test.
+  /// </summary>
   public enum PackageTestResult
   {
+    /// <summary>
+    /// Definitely not an instance of the package type.
+    /// </summary>
     NO,
+    /// <summary>
+    /// Possibly an instance of the package type, but a more in-depth analysis would be needed.
+    /// </summary>
     MAYBE,
+    /// <summary>
+    /// Definitely an instance of the package type.
+    /// </summary>
     YES
   };
-  public class PackageReader
+
+  /// <summary>
+  /// Collection of methods for reading packages.
+  /// </summary>
+  public static class PackageReader
   {
     /// <summary>
     /// Attempts to read the file as a supported archive package.
@@ -41,10 +56,15 @@ namespace GameArchives
     /// <returns></returns>
     /// <exception cref="NotSupportedException">Thrown when an unsupported file type is given.</exception>
     public static AbstractPackage ReadPackageFromFile(string file)
-    {
-      return ReadPackageFromFile(Util.LocalFile(file));
-    }
+      => ReadPackageFromFile(Util.LocalFile(file));
 
+    /// <summary>
+    /// Attempts to read the file as a supported archive package.
+    /// If the file is not of a supported format, throws an exception.
+    /// </summary>
+    /// <param name="file">An IFile referring to the archive package.</param>
+    /// <returns>The package, if it could be opened.</returns>
+    /// <exception cref="NotSupportedException">Thrown when an unsupported file type is given.</exception>
     public static AbstractPackage ReadPackageFromFile(IFile file)
     {
       var possible = new List<PackageType>();
@@ -73,6 +93,15 @@ namespace GameArchives
       }
       throw new NotSupportedException("Given file was not a supported archive format.");
     }
+    
+    /// <summary>
+    /// Tries to read a package given only a stream. This makes a dummy file which works with the package reader.
+    /// </summary>
+    /// <param name="stream">Stream to read from. This must support the Length property.</param>
+    /// <param name="filename">(Optional) the filename to give the dummy file.</param>
+    /// <returns></returns>
+    public static AbstractPackage ReadPackageFromStream(Stream stream, string filename = "unknown")
+      => ReadPackageFromFile(new Common.OffsetFile(filename, new Common.DefaultDirectory(null, ""), stream, 0, stream.Length));
 
     /// <summary>
     /// A list of supported file formats and their extensions, presented

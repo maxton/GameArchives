@@ -31,6 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\GameArchives.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-minimal|AnyCPU'">
     <OutputPath>bin\Release-minimal\</OutputPath>
@@ -73,9 +74,11 @@
     <Compile Include="Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XISO\XISODirectory.cs" />
+    <Compile Include="XISO\XISOFile.cs" />
     <Compile Include="XISO\XISOPackage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="GameArchives.licenseheader" />
     <None Include="..\LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -34,6 +34,7 @@ namespace GameArchives.FSAR
     public long Size { get; }
     public bool Compressed { get; }
     public long CompressedSize { get; }
+    public IDictionary<string, object> ExtendedInfo { get; }
 
     private long offset;
     private Stream archive;
@@ -48,6 +49,7 @@ namespace GameArchives.FSAR
       CompressedSize = zsize;
       this.offset = offset;
       this.archive = archive;
+      ExtendedInfo = new Dictionary<string, object>();
     }
 
     public byte[] GetBytes()

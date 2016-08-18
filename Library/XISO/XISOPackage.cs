@@ -31,13 +31,13 @@ namespace GameArchives.XISO
   /// </summary>
   class XISOPackage : AbstractPackage
   {
-    private static uint[] offsets = new uint[] { 0x00000000, 0x0000FB20, 0x00020600, 0x02080000, 0x0FD90000 };
-    private const long sectorLength = 0x800;
+    private static readonly uint[] Offsets = { 0x00000000, 0x0000FB20, 0x00020600, 0x02080000, 0x0FD90000 };
+    private const long SectorLength = 0x800;
 
-    private long rootSector;
-    private long rootSize;
-    private long rootOffset;
-    private long partitionOffset;
+    private long _rootSector;
+    private long _rootSize;
+    private long _rootOffset;
+    private long _partitionOffset;
 
     private Stream stream;
     private string filename;
@@ -52,9 +52,9 @@ namespace GameArchives.XISO
     {
       using (Stream s = f.GetStream())
       {
-        foreach (long offset in offsets)
+        foreach (long offset in Offsets)
         {
-          long newPos = offset + 32 * sectorLength;
+          long newPos = offset + 32 * SectorLength;
           if (s.Length < newPos)
             break;
           s.Position = newPos;
@@ -79,27 +79,27 @@ namespace GameArchives.XISO
 
     private void ParseISO()
     {
-      partitionOffset = -1;
-      foreach (long offset in offsets)
+      _partitionOffset = -1;
+      foreach (long offset in Offsets)
       {
-        stream.Position = offset + 32 * sectorLength;
+        stream.Position = offset + 32 * SectorLength;
         if (stream.ReadASCIINullTerminated(20) == "MICROSOFT*XBOX*MEDIA")
         {
-          partitionOffset = offset;
+          _partitionOffset = offset;
           break;
         }
       }
-      if(partitionOffset == -1)
+      if(_partitionOffset == -1)
         throw new InvalidDataException("File is not Xbox Media (couldn't find magic)");
 
-      rootSector = stream.ReadUInt32LE();
-      rootSize = stream.ReadUInt32LE();
-      rootOffset = partitionOffset + (rootSector * sectorLength);
+      _rootSector = stream.ReadUInt32LE();
+      _rootSize = stream.ReadUInt32LE();
+      _rootOffset = _partitionOffset + (_rootSector * SectorLength);
 
-      root = ParseDirectory(null, ROOT_DIR, rootOffset, 0);
+      root = ParseDirectory(null, ROOT_DIR, _rootOffset, 0);
     }
 
-    private class XDVDFSEntry
+    private struct XDVDFSEntry
     {
       public ushort left;
       public ushort right;
@@ -122,11 +122,11 @@ namespace GameArchives.XISO
       var entry = ReadEntry(baseOffset, entryOffset);
       if ((entry.attribs & 0x10) == 0x10)
       {
-        parent.AddDir(ParseDirectory(parent, entry.name, partitionOffset + entry.sector * sectorLength, 0));
+        parent.AddDir(ParseDirectory(parent, entry.name, _partitionOffset + entry.sector * SectorLength, 0));
       }
       else
       {
-        parent.AddFile(new OffsetFile(entry.name, parent, stream, partitionOffset + entry.sector * sectorLength, entry.length));
+        parent.AddFile(new XISOFile(entry.name, parent, stream, _partitionOffset + entry.sector * SectorLength, entry.length, baseOffset+entryOffset));
       }
       if(entry.left != 0)
       {
@@ -140,14 +140,16 @@ namespace GameArchives.XISO
 
     private XDVDFSEntry ReadEntry(long baseOffset, long entryOffset)
     {
-      XDVDFSEntry e = new XDVDFSEntry();
       stream.Position = baseOffset + entryOffset;
-      e.left = stream.ReadUInt16LE();
-      e.right = stream.ReadUInt16LE();
-      e.sector = stream.ReadUInt32LE();
-      e.length = stream.ReadUInt32LE();
-      e.attribs = stream.ReadUInt8();
-      e.nameLen = stream.ReadUInt8();
+      var e = new XDVDFSEntry
+      {
+        left = stream.ReadUInt16LE(),
+        right = stream.ReadUInt16LE(),
+        sector = stream.ReadUInt32LE(),
+        length = stream.ReadUInt32LE(),
+        attribs = stream.ReadUInt8(),
+        nameLen = stream.ReadUInt8()
+      };
       e.name = stream.ReadASCIINullTerminated(e.nameLen);
       if (e.nameLen != e.name.Length)
         throw new InvalidDataException("Filename length did not match expected length.");

@@ -59,7 +59,14 @@ namespace GameArchives
     /// The size of this file, as it is in the archive.
     /// </summary>
     long CompressedSize { get; }
-    
+
+    /// <summary>
+    /// A collection of extended information about the file. The values in the collection
+    /// depend on the type of package the file is from. Modifying this dictionary results in
+    /// undefined behavior.
+    /// </summary>
+    IDictionary<string, object> ExtendedInfo { get; }
+
     /// <summary>
     /// Get a byte-array in memory containing all the data of this file.
     /// </summary>

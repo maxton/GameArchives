@@ -24,6 +24,11 @@ namespace GameArchives
 {
   public static class Util
   {
+    /// <summary>
+    /// Opens a directory from the local filesystem as an IDirectory
+    /// </summary>
+    /// <param name="dir">Path to the directory.</param>
+    /// <returns>An IDirectory representing the local directory.</returns>
     public static IDirectory LocalDir(string dir)
     {
       IDirectory d = new Local.LocalDirectory(dir);
@@ -46,6 +51,12 @@ namespace GameArchives
       return f;
     }
 
+    /// <summary>
+    /// Returns the last element of this array.
+    /// </summary>
+    /// <typeparam name="T">The type of the array.</typeparam>
+    /// <param name="arr"></param>
+    /// <returns>The last element of the array.</returns>
     public static T Last<T>(this T[] arr)
     {
       return arr[arr.Length - 1];
@@ -67,6 +78,11 @@ namespace GameArchives
 
     // Only useful before .NET 4
     // by Jon Skeet (http://stackoverflow.com/questions/5730863/how-to-use-stream-copyto-on-net-framework-3-5)
+    /// <summary>
+    /// Copies one stream to the other.
+    /// </summary>
+    /// <param name="input">The source stream.</param>
+    /// <param name="output">The destination stream.</param>
     public static void CopyTo(this Stream input, Stream output)
     {
       byte[] buffer = new byte[16 * 1024]; // Fairly arbitrary size
