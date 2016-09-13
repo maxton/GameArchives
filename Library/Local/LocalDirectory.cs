@@ -35,6 +35,7 @@ namespace GameArchives.Local
   {
     private readonly string path;
     private bool dirsFilled = false;
+    private bool filesFilled = false;
 
     /// <summary>
     /// Make a shallow instance of the given local directory.
@@ -60,6 +61,24 @@ namespace GameArchives.Local
         }
         dirsFilled = true;
         return dirs.Values;
+      }
+    }
+
+    public override ICollection<IFile> Files
+    {
+      get
+      {
+        if (filesFilled)
+        {
+          return files.Values;
+        }
+        foreach (string f in Directory.GetFiles(path))
+        {
+          IFile tmp = new LocalFile(this, f);
+          AddFile(tmp);
+        }
+        filesFilled = true;
+        return files.Values;
       }
     }
 
