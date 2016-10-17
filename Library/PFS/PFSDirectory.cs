@@ -22,7 +22,7 @@ using GameArchives.Common;
 namespace GameArchives.PFS
 {
   /// <summary>
-  /// Xbox (360) ISO Directory
+  /// Playstation File System Directory
   /// </summary>
   class PFSDirectory : DefaultDirectory
   {
