@@ -250,5 +250,31 @@ namespace ArchiveExplorer
         pm.LoadFile(fileView.SelectedItems[0].Tag as IFile, this);
       }
     }
+
+    private void viewExtendedInfoToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      if (fileView.SelectedItems.Count != 1)
+      {
+        MessageBox.Show("Please select just one archive to view extended information for.");
+        return;
+      }
+      if (fileView.SelectedItems[0].Tag is IFile)
+      {
+        var f = fileView.SelectedItems[0].Tag as IFile;
+        var sb = new StringBuilder();
+        foreach (var kv in f.ExtendedInfo)
+        {
+          string val = kv.Value.ToString();
+          switch (kv.Value.GetType().Name)
+          {
+            case "Int64":
+              val = "0x"+(kv.Value as long?)?.ToString("X16");
+              break;
+          }
+          sb.Append(kv.Key).Append(": ").Append(val).AppendLine();
+        }
+        MessageBox.Show(sb.ToString(), "Extended Information for " + f.Name);
+      }
+    }
   }
 }
