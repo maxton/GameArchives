@@ -99,7 +99,11 @@ namespace GameArchives
                 new PackageType("XBOX/Xbox360 ISO",
                   new string[] { "*.iso" },
                   XISO.XISOPackage.IsXISO,
-                  XISO.XISOPackage.OpenFile)
+                  XISO.XISOPackage.OpenFile),
+                new PackageType("Playstation 4 PFS",
+                  new string[] { "*.dat", "*.*" },
+                  PFS.PFSPackage.IsPFS,
+                  PFS.PFSPackage.OpenFile)
               //new PackageType("", new string[] { }, null, null, null)
               };
     }

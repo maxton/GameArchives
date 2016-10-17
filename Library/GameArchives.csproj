@@ -67,6 +67,9 @@
     <Compile Include="FSGIMG\FSGIMGDirectory.cs" />
     <Compile Include="FSGIMG\FSGIMGPackage.cs" />
     <Compile Include="PackageType.cs" />
+    <Compile Include="PFS\PFSDirectory.cs" />
+    <Compile Include="PFS\PFSFile.cs" />
+    <Compile Include="PFS\PFSPackage.cs" />
     <Compile Include="STFS\STFSDirectory.cs" />
     <Compile Include="STFS\STFSFile.cs" />
     <Compile Include="STFS\STFSPackage.cs" />
@@ -87,6 +90,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
