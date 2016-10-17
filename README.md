@@ -31,6 +31,10 @@ This format is used in some FreeStyleGames games, including:
 
 This format may use compression.
 
+### PFS (pfs_image.dat, etc)
+This format is used for downloadable content and games on the PS4. It is structured much like the Unix File System.
+PKG files from game discs and downloads contain encrypted (and compressed?) PFS images within them.
+
 ### STFS (*)
 This includes the CON and LIVE formats, used for game saves and downloadable
 content (among other things) on the Xbox 360. Since documentation on the format
