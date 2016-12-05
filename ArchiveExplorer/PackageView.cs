@@ -26,12 +26,19 @@ namespace ArchiveExplorer
     public PackageView(AbstractPackage pkg)
     {
       InitializeComponent();
+      InitCustomComponents();
+
       pm = PackageManager.GetInstance();
       children = new List<PackageView>(0);
       currentPackage = pkg;
       currentDirectory = currentPackage.RootDirectory;
       ResetBreadcrumbs();
       FillFileView();
+    }
+
+    private void InitCustomComponents()
+    {
+      this.filePropertyGrid.ToolbarVisible = false;
     }
 
     public void SetView(View v)
@@ -251,29 +258,15 @@ namespace ArchiveExplorer
       }
     }
 
-    private void viewExtendedInfoToolStripMenuItem_Click(object sender, EventArgs e)
+    private void fileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
     {
-      if (fileView.SelectedItems.Count != 1)
+      if(fileView.SelectedItems.Count == 1)
       {
-        MessageBox.Show("Please select just one archive to view extended information for.");
-        return;
+        filePropertyGrid.SelectedObject = fileView.SelectedItems[0].Tag;
       }
-      if (fileView.SelectedItems[0].Tag is IFile)
+      else
       {
-        var f = fileView.SelectedItems[0].Tag as IFile;
-        var sb = new StringBuilder();
-        foreach (var kv in f.ExtendedInfo)
-        {
-          string val = kv.Value.ToString();
-          switch (kv.Value.GetType().Name)
-          {
-            case "Int64":
-              val = "0x"+(kv.Value as long?)?.ToString("X16");
-              break;
-          }
-          sb.Append(kv.Key).Append(": ").Append(val).AppendLine();
-        }
-        MessageBox.Show(sb.ToString(), "Extended Information for " + f.Name);
+        filePropertyGrid.SelectedObject = null;
       }
     }
   }

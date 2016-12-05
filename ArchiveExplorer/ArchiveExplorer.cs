@@ -62,7 +62,7 @@ namespace ArchiveExplorer
     {
       var newPage = new TabPage();
       newPage.Text = "Loading...";
-      tabControl1.Controls.Add(newPage);
+      packagesTabControl.Controls.Add(newPage);
       PackageView packageView = null;
       try
       {
@@ -78,11 +78,11 @@ namespace ArchiveExplorer
         packageView.Margin = new System.Windows.Forms.Padding(0);
         packageView.Name = "packageView";
         packageView.TabIndex = 0;
-        tabControl1.SelectedTab = newPage;
+        packagesTabControl.SelectedTab = newPage;
       }
       catch (Exception ex)
       {
-        tabControl1.Controls.Remove(newPage);
+        packagesTabControl.Controls.Remove(newPage);
         MessageBox.Show("Could not load archive!" + Environment.NewLine + ex.Message, "Error");
       }
       return packageView;
@@ -90,8 +90,10 @@ namespace ArchiveExplorer
 
     public void RemoveTab(TabPage p)
     {
-      tabControl1.Controls.Remove(p);
+      packagesTabControl.Controls.Remove(p);
     }
+
+    
 
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
     {
@@ -141,7 +143,7 @@ namespace ArchiveExplorer
     private void SetView(View v)
     {
       view = v;
-      foreach(TabPage t in tabControl1.TabPages)
+      foreach(TabPage t in packagesTabControl.TabPages)
       {
         if(t.Controls.Count > 0)
           (t.Controls[0] as PackageView)?.SetView(v);
@@ -155,7 +157,7 @@ namespace ArchiveExplorer
 
     private void closeToolStripMenuItem_Click(object sender, EventArgs e)
     {
-      (tabControl1.SelectedTab?.Controls[0] as PackageView)?.Unload();
+      (packagesTabControl.SelectedTab?.Controls[0] as PackageView)?.Unload();
     }
 
     private void tabControl1_Click(object sender, MouseEventArgs e)
@@ -172,6 +174,21 @@ namespace ArchiveExplorer
     private void gitHubToolStripMenuItem_Click(object sender, EventArgs e)
     {
       System.Diagnostics.Process.Start("https://github.com/maxton/GameArchives");
+    }
+
+    private void packagesTabControl_DragDrop(object sender, DragEventArgs e)
+    {
+      var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+      foreach(string file in files)
+      {
+        LoadFile(Util.LocalFile(file));
+      }
+    }
+
+    private void packagesTabControl_DragEnter(object sender, DragEventArgs e)
+    {
+      if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        e.Effect = DragDropEffects.Copy;
     }
   }
 }
