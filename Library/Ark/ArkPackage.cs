@@ -49,6 +49,9 @@ namespace GameArchives.Ark
 
     public static PackageTestResult IsArk(IFile fn)
     {
+      if (!fn.Name.ToLower().EndsWith(".hdr") && !fn.Name.ToLower().EndsWith(".ark"))
+        return PackageTestResult.NO;
+
       using (Stream s = fn.GetStream())
       {
         s.Position = 0;
