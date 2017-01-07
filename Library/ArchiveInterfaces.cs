@@ -179,6 +179,11 @@ namespace GameArchives
     public const string ROOT_DIR = "/";
 
     /// <summary>
+    /// The .NET type of the file objects in this package.
+    /// </summary>
+    public virtual Type FileType => typeof(IFile);
+
+    /// <summary>
     /// Get the file at the given path. Path separator is '/'.
     /// Files in the root directory have no path separator.
     /// </summary>

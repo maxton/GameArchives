@@ -41,6 +41,7 @@ namespace GameArchives.FSGIMG
     public override IDirectory RootDirectory => root;
     public override long Size => filestream.Length;
     public override bool Writeable => false;
+    public override Type FileType => typeof(OffsetFile);
 
     private Stream filestream;
     private FSGIMGDirectory root;

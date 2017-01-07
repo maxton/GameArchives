@@ -42,7 +42,7 @@ namespace GameArchives.PFS
     public override string FileName => _filename;
     public override long Size => _stream.Length;
     public override IDirectory RootDirectory => _root;
-
+    public override Type FileType => typeof(PFSFile);
 
     public static PackageTestResult IsPFS(IFile f)
     {

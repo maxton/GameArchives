@@ -27,7 +27,7 @@ namespace GameArchives.STFS
   /// <summary>
   /// Represents the two supported types of STFS packages (CON and LIVE).
   /// </summary>
-  public enum Type {
+  public enum STFSType {
     /// <summary>
     /// Package signed with console key.
     /// </summary>
@@ -108,7 +108,7 @@ namespace GameArchives.STFS
     /// <summary>
     /// The type of this STFS package (LIVE and CON are supported).
     /// </summary>
-    public Type Type { get; }
+    public STFSType Type { get; }
 
     /// <summary>
     /// The directory under which all files in this STFS package live.
@@ -121,6 +121,8 @@ namespace GameArchives.STFS
     /// The total size of this STFS package.
     /// </summary>
     public override long Size => stream.Length;
+
+    public override Type FileType => typeof(STFSFile);
 
     /// <summary>
     /// Has this package been disposed?
@@ -195,13 +197,13 @@ namespace GameArchives.STFS
       string magic = stream.ReadASCIINullTerminated(4);
       switch (magic) {
         case "CON ":
-          Type = Type.CON;
+          Type = STFSType.CON;
           break;
         case "LIVE":
-          Type = Type.LIVE;
+          Type = STFSType.LIVE;
           break;
         case "PIRS":
-          Type = Type.PIRS;
+          Type = STFSType.PIRS;
           break;
         default:
           throw new InvalidDataException("STFS is not CON, LIVE, or PIRS");

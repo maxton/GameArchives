@@ -51,6 +51,7 @@ namespace GameArchives.XISO
     public override string FileName => filename;
     public override IDirectory RootDirectory => root;
 
+    public override Type FileType => typeof(XISOFile);
 
     public static PackageTestResult IsXISO(IFile f)
     {
@@ -76,7 +77,7 @@ namespace GameArchives.XISO
 
     public override List<F> GetAllFiles<F>()
     {
-      if (typeof(F) == typeof(XISOFile))
+      if (typeof(F) == typeof(XISOFile) || typeof(XISOFile).IsSubclassOf(typeof(F)))
         return _allFiles.ConvertAll(f => f as F);
       return new List<F>();
     }

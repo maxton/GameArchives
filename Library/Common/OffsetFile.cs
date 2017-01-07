@@ -37,6 +37,8 @@ namespace GameArchives.Common
     public IDirectory Parent { get; }
     public long Size { get; protected set; }
 
+    public long DataLocation => data_offset;
+
     private Stream img_file;
     private long data_offset;
 

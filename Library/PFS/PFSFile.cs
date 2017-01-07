@@ -25,12 +25,10 @@ namespace GameArchives.PFS
   public class PFSFile : OffsetFile
   {
     public long InodeIdx => (long) ExtendedInfo["InodeIdx"];
-    public long DataLocation => (long)ExtendedInfo["DataLocation"];
     public PFSFile(string name, IDirectory parent, Stream img, long offset, long size, long inodeIdx) 
       : base(name, parent, img, offset, size)
     {
       ExtendedInfo.Add("InodeIdx", inodeIdx);
-      ExtendedInfo.Add("DataLocation", offset);
     }
   }
 }

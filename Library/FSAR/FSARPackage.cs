@@ -49,6 +49,8 @@ namespace GameArchives.FSAR
 
     public override bool Writeable => false;
 
+    public override Type FileType => typeof(FSARFile);
+
     private Stream filestream;
     private FSARDirectory root;
 

@@ -54,6 +54,8 @@ namespace GameArchives.PSARC
 
     public override bool Writeable => false;
 
+    public override Type FileType => typeof(PSARCFile);
+
     private Stream filestream;
     private PSARCDirectory root;
 
