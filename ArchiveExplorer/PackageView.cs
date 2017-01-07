@@ -22,6 +22,7 @@ namespace ArchiveExplorer
 
     private List<PackageView> children;
     private PackageManager pm;
+    private PackageView parent = null;
 
     public PackageView(AbstractPackage pkg)
     {
@@ -41,6 +42,9 @@ namespace ArchiveExplorer
       this.filePropertyGrid.ToolbarVisible = false;
     }
 
+    /// <summary>
+    /// Sets the display mode of the files in the view (e.g., icons, details, list...)
+    /// </summary>
     public void SetView(View v)
     {
       fileView.View = v;
@@ -66,6 +70,9 @@ namespace ArchiveExplorer
       }
     }
 
+    /// <summary>
+    /// Navigates the view to the given directory.
+    /// </summary>
     private void SetCurrentDir(IDirectory dir)
     {
       currentDirectory = dir;
@@ -73,19 +80,22 @@ namespace ArchiveExplorer
       ResetBreadcrumbs();
     }
 
+    /// <summary>
+    /// Add a package as a child of this package.
+    /// This means the given package will be closed if this package is closed.
+    /// </summary>
     public void AddChildPackage(PackageView p)
     {
       this.children.Add(p);
       p.SetParentPackage(this);
     }
 
-    public void RemoveChildPackage(PackageView p)
+    private void RemoveChildPackage(PackageView p)
     {
       this.children.Remove(p);
     }
-
-    private PackageView parent = null;
-    public void SetParentPackage(PackageView p)
+    
+    private void SetParentPackage(PackageView p)
     {
       parent = p;
     }
@@ -148,6 +158,7 @@ namespace ArchiveExplorer
         button.Tag = dir;
         button.Click += (x, y) => SetCurrentDir(button.Tag as IDirectory);
         dir = dir.Parent;
+        i++;
       }
       foreach (var btn in breadcrumbs)
       {
@@ -266,7 +277,7 @@ namespace ArchiveExplorer
       }
       else
       {
-        filePropertyGrid.SelectedObject = null;
+        filePropertyGrid.SelectedObject = currentPackage;
       }
     }
   }
