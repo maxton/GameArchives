@@ -51,6 +51,11 @@ namespace GameArchives
       return f;
     }
 
+    public static IFile NullFile()
+    {
+      return new Common.OffsetFile("", null, new MemoryStream(0), 0, 0);
+    }
+
     /// <summary>
     /// Returns the last element of this array.
     /// </summary>

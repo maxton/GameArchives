@@ -253,6 +253,25 @@ namespace GameArchives
     }
 
     /// <summary>
+    /// Reads a multibyte value of the specified length from the stream.
+    /// </summary>
+    /// <param name="s">The stream</param>
+    /// <param name="bytes">Must be less than or equal to 8</param>
+    /// <returns></returns>
+    public static long ReadMultibyteBE(this Stream s, byte bytes)
+    {
+      if (bytes > 8) return 0;
+      long ret = 0;
+      var b = s.ReadBytes(bytes);
+      for(uint i = 0; i < b.Length; i++)
+      {
+        ret <<= 8;
+        ret |= b[i];
+      }
+      return ret;
+    }
+
+    /// <summary>
     /// Read a single-precision (4-byte) floating-point value from the stream.
     /// </summary>
     /// <param name="s"></param>

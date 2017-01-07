@@ -70,6 +70,9 @@
     <Compile Include="PFS\PFSDirectory.cs" />
     <Compile Include="PFS\PFSFile.cs" />
     <Compile Include="PFS\PFSPackage.cs" />
+    <Compile Include="PSARC\PSARCDirectory.cs" />
+    <Compile Include="PSARC\PSARCFile.cs" />
+    <Compile Include="PSARC\PSARCPackage.cs" />
     <Compile Include="STFS\STFSDirectory.cs" />
     <Compile Include="STFS\STFSFile.cs" />
     <Compile Include="STFS\STFSPackage.cs" />
@@ -78,6 +81,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XISO\XISODirectory.cs" />
     <Compile Include="XISO\XISOFile.cs" />
+    <Compile Include="XISO\XISOFSNode.cs" />
     <Compile Include="XISO\XISOPackage.cs" />
   </ItemGroup>
   <ItemGroup>

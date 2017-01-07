@@ -103,7 +103,11 @@ namespace GameArchives
                 new PackageType("Playstation 4 PFS",
                   new string[] { "*.dat", "*.*" },
                   PFS.PFSPackage.IsPFS,
-                  PFS.PFSPackage.OpenFile)
+                  PFS.PFSPackage.OpenFile),
+                new PackageType("Playstation PSARC",
+                new string[] {"*.psarc","*.pak" },
+                PSARC.PSARCPackage.IsPSARC,
+                PSARC.PSARCPackage.FromFile)
               //new PackageType("", new string[] { }, null, null, null)
               };
     }
