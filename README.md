@@ -35,6 +35,10 @@ This format may use compression.
 This format is used for downloadable content and games on the PS4. It is structured much like the Unix File System.
 PKG files from game discs and downloads contain encrypted (and compressed?) PFS images within them.
 
+### PSARC (*.psarc, *.pak)
+This format is used commonly in Playstation 3 and 4 games, and usually has the extension .psarc.
+The files within can be compressed with zlib or lzma. Currently, only zlib-compressed archives are supported.
+
 ### STFS (*)
 This includes the CON and LIVE formats, used for game saves and downloadable
 content (among other things) on the Xbox 360. Since documentation on the format
