@@ -27,9 +27,9 @@ using System.Text;
 namespace GameArchives.XISO
 {
   /// <summary>
-  /// Represents an Xbox (360) disc image.
+  /// Represents an Xbox/Xbox 360 disc image.
   /// </summary>
-  class XISOPackage : AbstractPackage
+  public class XISOPackage : AbstractPackage, MutablePackage
   {
     private static readonly uint[] Offsets = { 0x00000000, 0x0000FB20, 0x00020600, 0x02080000, 0x0FD90000 };
     private const long SectorLength = 0x800;
@@ -39,10 +39,14 @@ namespace GameArchives.XISO
     private long _rootOffset;
     private long _partitionOffset;
 
+    private List<XISOFile> _allFiles;
+    private List<XISODirectory> _allDirectories;
+
     private Stream stream;
     private string filename;
     private XISODirectory root;
 
+    public override long Size => stream.Length;
     public override bool Writeable => false;
     public override string FileName => filename;
     public override IDirectory RootDirectory => root;
@@ -68,6 +72,13 @@ namespace GameArchives.XISO
     public static XISOPackage OpenFile(IFile f)
     {
       return new XISOPackage(f);
+    }
+
+    public override List<F> GetAllFiles<F>()
+    {
+      if (typeof(F) == typeof(XISOFile))
+        return _allFiles.ConvertAll(f => f as F);
+      return new List<F>();
     }
 
     private XISOPackage(IFile f)
@@ -96,6 +107,8 @@ namespace GameArchives.XISO
       _rootSize = stream.ReadUInt32LE();
       _rootOffset = _partitionOffset + (_rootSector * SectorLength);
 
+      _allFiles = new List<XISOFile>();
+      _allDirectories = new List<XISODirectory>();
       root = ParseDirectory(null, ROOT_DIR, _rootOffset, 0);
     }
 
@@ -112,7 +125,7 @@ namespace GameArchives.XISO
 
     private XISODirectory ParseDirectory(XISODirectory parent, string name, long baseOffset, long entryOffset)
     {
-      XISODirectory ret = new XISODirectory(parent, name);
+      XISODirectory ret = new XISODirectory(parent, name, baseOffset + entryOffset);
       ParseTree(ret, baseOffset, entryOffset);
       return ret;
     }
@@ -122,11 +135,15 @@ namespace GameArchives.XISO
       var entry = ReadEntry(baseOffset, entryOffset);
       if ((entry.attribs & 0x10) == 0x10)
       {
-        parent.AddDir(ParseDirectory(parent, entry.name, _partitionOffset + entry.sector * SectorLength, 0));
+        var dir = ParseDirectory(parent, entry.name, _partitionOffset + entry.sector * SectorLength, 0);
+        parent.AddDir(dir);
+        _allDirectories.Add(dir);
       }
       else
       {
-        parent.AddFile(new XISOFile(entry.name, parent, stream, _partitionOffset + entry.sector * SectorLength, entry.length, baseOffset+entryOffset));
+        var file = new XISOFile(entry.name, parent, stream, _partitionOffset + entry.sector * SectorLength, entry.length, baseOffset + entryOffset);
+        _allFiles.Add(file);
+        parent.AddFile(file);
       }
       if(entry.left != 0)
       {
@@ -159,6 +176,36 @@ namespace GameArchives.XISO
     public override void Dispose()
     {
       stream.Dispose();
+    }
+
+    public bool TryReplaceFile(IFile target, IFile source)
+    {
+      if (!(target is XISOFile)) return false;
+      var old = target as XISOFile;
+
+      if(_allFiles.Contains(old) && target != source)
+      {
+        if(old.Size >= source.Size)
+        {
+          stream.Position = old.DataLocation;
+          using(var s = source.GetStream())
+          {
+            s.CopyTo(stream);
+          }
+          old.UpdateSize(source.Size);
+          stream.Position = old.EntryLocation + 8; // length
+          byte[] newLength = {
+            (byte)(old.Size       & 0xFF),
+            (byte)(old.Size >> 8  & 0xFF),
+            (byte)(old.Size >> 16 & 0xFF),
+            (byte)(old.Size >> 24 & 0xFF)
+          };
+          stream.Write(newLength, 0, 4);
+          return true;
+        }
+      }
+
+      return false;
     }
   }
 }

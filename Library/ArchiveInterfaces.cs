@@ -153,6 +153,12 @@ namespace GameArchives
     public abstract IDirectory RootDirectory { get; }
 
     /// <summary>
+    /// The size of this package's data files. For packages with unified header and data,
+    /// this is just the size of the package file.
+    /// </summary>
+    public abstract long Size { get; }
+
+    /// <summary>
     /// Indicates whether this package can be modified.
     /// </summary>
     public abstract bool Writeable { get; }
@@ -179,5 +185,44 @@ namespace GameArchives
     /// <param name="path"></param>
     /// <returns>The file at the given path.</returns>
     public IFile GetFile(string path) => RootDirectory.GetFileAtPath(path);
+
+    /// <summary>
+    /// Returns a list containing all the logical files of the specified type in this archive.
+    /// </summary>
+    /// <returns></returns>
+    public virtual List<F> GetAllFiles<F>() where F:class,IFile
+    {
+      var files = new List<F>();
+      Action<IDirectory> readDirectory = null;
+      readDirectory = (d) =>
+      {
+        foreach (var f in d.Files) if(f as F != null) files.Add(f as F);
+        foreach (var dir in d.Dirs) readDirectory(dir);
+      };
+
+      readDirectory(RootDirectory);
+      return files;
+    }
+
+    /// <summary>
+    /// Returns a list containing all the logical files in this archive.
+    /// </summary>
+    /// <returns></returns>
+    public List<IFile> GetAllFiles()
+    {
+      return GetAllFiles<IFile>();
+    }
+  }
+
+  public interface MutablePackage
+  {
+    /// <summary>
+    /// Replace the given target file with the given source file.
+    /// This modifies the archive file permanently!
+    /// </summary>
+    /// <param name="target">The file to be overwritten.</param>
+    /// <param name="source">The file to read from.</param>
+    /// <returns>True if the replacement is successful.</returns>
+    bool TryReplaceFile(IFile target, IFile source);
   }
 }

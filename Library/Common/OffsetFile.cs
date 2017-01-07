@@ -35,7 +35,7 @@ namespace GameArchives.Common
     public IDictionary<string, object> ExtendedInfo { get; }
     public string Name { get; }
     public IDirectory Parent { get; }
-    public long Size { get; }
+    public long Size { get; protected set; }
 
     private Stream img_file;
     private long data_offset;

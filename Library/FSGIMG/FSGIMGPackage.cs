@@ -39,6 +39,7 @@ namespace GameArchives.FSGIMG
     public override string FileName { get; }
 
     public override IDirectory RootDirectory => root;
+    public override long Size => filestream.Length;
     public override bool Writeable => false;
 
     private Stream filestream;

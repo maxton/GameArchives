@@ -28,9 +28,13 @@ namespace GameArchives.XISO
   /// <summary>
   /// Xbox (360) ISO Directory
   /// </summary>
-  class XISODirectory : DefaultDirectory
+  public class XISODirectory : DefaultDirectory, XISOFSNode
   {
-    public XISODirectory(IDirectory parent, string name) : base(parent, name)
-    { }
+    public long EntryLocation { get; }
+
+    public XISODirectory(IDirectory parent, string name, long loc) : base(parent, name)
+    {
+      EntryLocation = loc;
+    }
   }
 }

@@ -40,6 +40,7 @@ namespace GameArchives.PFS
 
     public override bool Writeable => false;
     public override string FileName => _filename;
+    public override long Size => _stream.Length;
     public override IDirectory RootDirectory => _root;
 
 

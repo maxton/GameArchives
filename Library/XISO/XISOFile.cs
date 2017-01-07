@@ -4,7 +4,7 @@ using GameArchives.Common;
 
 namespace GameArchives.XISO
 {
-  public class XISOFile : OffsetFile
+  public class XISOFile : OffsetFile, XISOFSNode
   {
     public long EntryLocation => (long) ExtendedInfo["EntryLocation"];
     public long DataLocation => (long)ExtendedInfo["DataLocation"];
@@ -13,6 +13,11 @@ namespace GameArchives.XISO
     {
       ExtendedInfo.Add("EntryLocation", entryLocation);
       ExtendedInfo.Add("DataLocation", offset);
+    }
+
+    internal void UpdateSize(long newSize)
+    {
+      Size = newSize;
     }
   }
 }

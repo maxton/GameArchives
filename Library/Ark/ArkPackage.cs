@@ -45,6 +45,7 @@ namespace GameArchives.Ark
 
     public override string FileName { get; }
     public override IDirectory RootDirectory => root;
+    public override long Size => totalArkFileSizes;
     public override bool Writeable => false;
 
     public static PackageTestResult IsArk(IFile fn)

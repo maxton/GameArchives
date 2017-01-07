@@ -120,7 +120,7 @@ namespace GameArchives.STFS
     /// <summary>
     /// The total size of this STFS package.
     /// </summary>
-    public long Size => stream.Length;
+    public override long Size => stream.Length;
 
     /// <summary>
     /// Has this package been disposed?
