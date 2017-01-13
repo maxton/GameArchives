@@ -18,6 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace GameArchives.PFS
@@ -113,7 +114,7 @@ namespace GameArchives.PFS
       public int ino;
       public int type;
       public int namelen;
-      public int entsize;
+      public uint entsize;
       public string name;
     }
 
@@ -154,8 +155,8 @@ namespace GameArchives.PFS
       _stream.Seek(56, SeekOrigin.Current);
       ret.uid = _stream.ReadUInt32LE();
       ret.gid = _stream.ReadUInt32LE();
-      _stream.Seek(20, SeekOrigin.Current);
-
+      _stream.Seek(16, SeekOrigin.Current);
+      ret.blocks = _stream.ReadUInt32LE();
       for (var i = 0; i < 12; i++)
       {
         ret.db[i] = _stream.ReadInt32LE();
@@ -171,7 +172,7 @@ namespace GameArchives.PFS
         ino = _stream.ReadInt32LE(),
         type = _stream.ReadInt32LE(),
         namelen = _stream.ReadInt32LE(),
-        entsize = _stream.ReadInt32LE()
+        entsize = _stream.ReadUInt32LE()
       };
       ret.name = _stream.ReadASCIINullTerminated(ret.namelen);
       _stream.Position = (_stream.Position + 7) & (~7L);
@@ -206,9 +207,26 @@ namespace GameArchives.PFS
 
       var ret = new PFSDirectory(parent, name);
 
-      foreach (long x in dinodes[dinode].db)
+      // TODO: In the future, if it turns out (in)direct blocks are used,
+      //       extract this to a method and use it for both files and dirs.
+      IList<int> dataBlocks;
+      if (dinodes[dinode].db[1] == -1)
       {
-        if (x <= 0) continue;
+        // PFS uses -1 to indicate that consecutive blocks are used.
+        dataBlocks = new int[dinodes[dinode].blocks];
+        for (var i = 0; i < dataBlocks.Count; i++)
+          dataBlocks[i] = i + dinodes[dinode].db[0];
+      }
+      else
+      {
+        dataBlocks = dinodes[dinode].db;
+        //TODO: Indirect blocks. I haven't seen these yet, maybe they would be
+        //      used if PFS is used for saves or something?
+      }
+
+      foreach (var x in dataBlocks)
+      {
+        if (x == 0) break;
 
         _stream.Position = header.blocksz*x;
 
