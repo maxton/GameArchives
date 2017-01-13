@@ -112,7 +112,7 @@ lzma
         throw new InvalidDataException("Corrupt PSARC header or missing TOC entries.");
       var fileList = ReadFileList(s, tocEntries[0]);
 
-      for(var i = 1; i < tocEntries.Count; i++) {
+      for(var i = 1; i < tocEntries.Count && i < fileList.Count + 1; i++) {
         var file = new PSARCFile(fileList[i - 1].Split('/').Last(), root, tocEntries[i], s);
         makeOrGetDir(fileList[i - 1]).AddFile(file);
       }

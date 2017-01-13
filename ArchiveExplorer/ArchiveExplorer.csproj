@@ -55,6 +55,13 @@
     <Compile Include="ArchiveExplorer.Designer.cs">
       <DependentUpon>ArchiveExplorer.cs</DependentUpon>
     </Compile>
+    <Compile Include="EditorWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditorWindow.Designer.cs">
+      <DependentUpon>EditorWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions.cs" />
     <Compile Include="FolderSelectDialog.cs" />
     <Compile Include="PackageManager.cs" />
     <Compile Include="PackageView.cs">
@@ -68,6 +75,9 @@
     <Compile Include="Reflector.cs" />
     <EmbeddedResource Include="ArchiveExplorer.resx">
       <DependentUpon>ArchiveExplorer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditorWindow.resx">
+      <DependentUpon>EditorWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PackageView.resx">
       <DependentUpon>PackageView.cs</DependentUpon>

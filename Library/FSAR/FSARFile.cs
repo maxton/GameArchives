@@ -35,6 +35,7 @@ namespace GameArchives.FSAR
     public bool Compressed { get; }
     public long CompressedSize { get; }
     public IDictionary<string, object> ExtendedInfo { get; }
+    public Stream Stream => GetStream();
 
     private long offset;
     private Stream archive;

@@ -73,6 +73,11 @@ namespace GameArchives
     /// <returns></returns>
     byte[] GetBytes();
 
+    ///<summary>
+    /// Gets a stream that allows access to this file.
+    ///</summary>
+    Stream Stream { get; }
+
     /// <summary>
     /// Get a stream (either memory-backed or disk-based) that allows access to this file.
     /// </summary>
@@ -221,6 +226,14 @@ namespace GameArchives
 
   public interface MutablePackage
   {
+    /// <summary>
+    /// Checks if a replacement operation is possible on the given source and target files.
+    /// </summary>
+    /// <param name="target">The file to be overwritten.</param>
+    /// <param name="source">The file to read from.</param>
+    /// <returns>True if the replacement is possible.</returns>
+    bool FileReplaceCheck(IFile target, IFile source);
+
     /// <summary>
     /// Replace the given target file with the given source file.
     /// This modifies the archive file permanently!

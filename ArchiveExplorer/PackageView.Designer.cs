@@ -45,6 +45,8 @@
       this.fileInspectorTabControl = new System.Windows.Forms.TabControl();
       this.tabPage1 = new System.Windows.Forms.TabPage();
       this.filePropertyGrid = new System.Windows.Forms.PropertyGrid();
+      this.tabPage2 = new System.Windows.Forms.TabPage();
+      this.openEditorButton = new System.Windows.Forms.Button();
       this.fileViewContextMenu.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
@@ -52,6 +54,7 @@
       this.splitContainer1.SuspendLayout();
       this.fileInspectorTabControl.SuspendLayout();
       this.tabPage1.SuspendLayout();
+      this.tabPage2.SuspendLayout();
       this.SuspendLayout();
       // 
       // label1
@@ -71,7 +74,7 @@
             this.extractSelectedItems,
             this.openSelectedArchiveToolStripMenuItem});
       this.fileViewContextMenu.Name = "fileViewContextMenu";
-      this.fileViewContextMenu.Size = new System.Drawing.Size(197, 70);
+      this.fileViewContextMenu.Size = new System.Drawing.Size(197, 48);
       // 
       // extractSelectedItems
       // 
@@ -170,6 +173,7 @@
       // fileInspectorTabControl
       // 
       this.fileInspectorTabControl.Controls.Add(this.tabPage1);
+      this.fileInspectorTabControl.Controls.Add(this.tabPage2);
       this.fileInspectorTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
       this.fileInspectorTabControl.Location = new System.Drawing.Point(0, 0);
       this.fileInspectorTabControl.Name = "fileInspectorTabControl";
@@ -198,6 +202,27 @@
       this.filePropertyGrid.TabIndex = 9;
       this.filePropertyGrid.ToolbarVisible = false;
       // 
+      // tabPage2
+      // 
+      this.tabPage2.Controls.Add(this.openEditorButton);
+      this.tabPage2.Location = new System.Drawing.Point(4, 22);
+      this.tabPage2.Name = "tabPage2";
+      this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage2.Size = new System.Drawing.Size(227, 362);
+      this.tabPage2.TabIndex = 1;
+      this.tabPage2.Text = "Tools";
+      this.tabPage2.UseVisualStyleBackColor = true;
+      // 
+      // openEditorButton
+      // 
+      this.openEditorButton.Location = new System.Drawing.Point(6, 6);
+      this.openEditorButton.Name = "openEditorButton";
+      this.openEditorButton.Size = new System.Drawing.Size(75, 23);
+      this.openEditorButton.TabIndex = 0;
+      this.openEditorButton.Text = "Open Editor";
+      this.openEditorButton.UseVisualStyleBackColor = true;
+      this.openEditorButton.Click += new System.EventHandler(this.openEditorButton_Click);
+      // 
       // PackageView
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -215,6 +240,7 @@
       this.splitContainer1.ResumeLayout(false);
       this.fileInspectorTabControl.ResumeLayout(false);
       this.tabPage1.ResumeLayout(false);
+      this.tabPage2.ResumeLayout(false);
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -237,5 +263,7 @@
     private System.Windows.Forms.TabControl fileInspectorTabControl;
     private System.Windows.Forms.TabPage tabPage1;
     private System.Windows.Forms.PropertyGrid filePropertyGrid;
+    private System.Windows.Forms.TabPage tabPage2;
+    private System.Windows.Forms.Button openEditorButton;
   }
 }

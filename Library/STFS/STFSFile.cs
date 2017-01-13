@@ -38,6 +38,7 @@ namespace GameArchives.STFS
     public long CompressedSize => Size;
 
     public IDictionary<string, object> ExtendedInfo { get; }
+    public System.IO.Stream Stream => GetStream();
 
     STFSPackage container;
     int[] dataBlocks;

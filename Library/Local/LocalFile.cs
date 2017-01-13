@@ -34,7 +34,7 @@ namespace GameArchives.Local
     public long Size { get; }
     public string Name { get; }
     public IDirectory Parent { get; }
-
+    public Stream Stream => GetStream();
     public IDictionary<string, object> ExtendedInfo { get; }
 
     private string path;
@@ -54,7 +54,14 @@ namespace GameArchives.Local
     }
     public Stream GetStream()
     {
-      return File.OpenRead(path);
+      try
+      {
+        return File.Open(path, FileMode.Open, FileAccess.ReadWrite);
+      }
+      catch(Exception ex)
+      {
+        return File.OpenRead(path);
+      }
     }
   }
 }

@@ -36,6 +36,7 @@ namespace GameArchives.Common
     public string Name { get; }
     public IDirectory Parent { get; }
     public long Size { get; protected set; }
+    public Stream Stream => GetStream();
 
     public long DataLocation => data_offset;
 

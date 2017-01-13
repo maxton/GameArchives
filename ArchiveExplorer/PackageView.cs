@@ -24,6 +24,8 @@ namespace ArchiveExplorer
     private PackageManager pm;
     private PackageView parent = null;
 
+    private EditorWindow ew;
+
     public PackageView(AbstractPackage pkg)
     {
       InitializeComponent();
@@ -48,26 +50,6 @@ namespace ArchiveExplorer
     public void SetView(View v)
     {
       fileView.View = v;
-    }
-
-    private string HumanReadableFileSize(long size)
-    {
-      if (size > (1024 * 1024 * 1024))
-      {
-        return (size / (double)(1024 * 1024 * 1024)).ToString("F") + " GiB";
-      }
-      else if (size > (1024 * 1024))
-      {
-        return (size / (double)(1024 * 1024)).ToString("F") + " MiB";
-      }
-      else if (size > 1024)
-      {
-        return (size / 1024.0).ToString("F") + " KiB";
-      }
-      else
-      {
-        return size.ToString() + " B";
-      }
     }
 
     /// <summary>
@@ -103,6 +85,7 @@ namespace ArchiveExplorer
     public void Unload()
     {
       parent?.RemoveChildPackage(this);
+      ew?.Close();
       var childrenFixed = children.ToArray();
       foreach(var pkg in childrenFixed)
       {
@@ -130,7 +113,7 @@ namespace ArchiveExplorer
         }
         foreach (var file in currentDirectory.Files)
         {
-          var item = new ListViewItem(new string[] { file.Name, "File", HumanReadableFileSize(file.Size) });
+          var item = new ListViewItem(new string[] { file.Name, "File", file.Size.HumanReadableFileSize() });
           item.Tag = file;
           item.ImageIndex = 1;
           fileView.Items.Add(item);
@@ -278,6 +261,23 @@ namespace ArchiveExplorer
       else
       {
         filePropertyGrid.SelectedObject = currentPackage;
+      }
+    }
+
+    private void openEditorButton_Click(object sender, EventArgs e)
+    {
+      try
+      {
+        if (ew == null)
+        {
+          ew = new EditorWindow(currentPackage);
+          ew.FormClosed += (o, ev) => ew = null;
+        }
+        ew.Show(this);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show(ex.Message);
       }
     }
   }

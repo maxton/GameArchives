@@ -47,7 +47,7 @@ namespace GameArchives.XISO
     private XISODirectory root;
 
     public override long Size => stream.Length;
-    public override bool Writeable => false;
+    public override bool Writeable { get { stream.Position = 0; return stream.CanWrite; } }
     public override string FileName => filename;
     public override IDirectory RootDirectory => root;
 
@@ -179,8 +179,18 @@ namespace GameArchives.XISO
       stream.Dispose();
     }
 
+    public bool FileReplaceCheck(IFile target, IFile source)
+    {
+      return target != source
+        && Writeable
+        && (target is XISOFile)
+        && _allFiles.Contains(target as XISOFile)
+        && target.Size >= source.Size;
+    }
+
     public bool TryReplaceFile(IFile target, IFile source)
     {
+      if (!Writeable) return false;
       if (!(target is XISOFile)) return false;
       var old = target as XISOFile;
 
