@@ -35,6 +35,7 @@ namespace ArchiveExplorer
       children = new List<PackageView>(0);
       currentPackage = pkg;
       currentDirectory = currentPackage.RootDirectory;
+      filePropertyGrid.SelectedObject = currentPackage;
       ResetBreadcrumbs();
       FillFileView();
     }

@@ -1,9 +1,7 @@
-﻿extensions: designer.cs generated.cs
-extensions: .cs .cpp .h
-/*
- * %FileName%
+﻿/*
+ * U8Directory.cs
  * 
- * Copyright (c) 2015-%CurrentYear%, maxton. All rights reserved.
+ * Copyright (c) 2015-2017, maxton. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,3 +17,14 @@ extensions: .cs .cpp .h
  * License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
+using System;
+using GameArchives.Common;
+
+namespace GameArchives.U8
+{
+  class U8Directory : DefaultDirectory
+  {
+    public U8Directory(U8Directory parent, string name) : base(parent, name)
+    { }
+  }
+}

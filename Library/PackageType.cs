@@ -105,9 +105,13 @@ namespace GameArchives
                   PFS.PFSPackage.IsPFS,
                   PFS.PFSPackage.OpenFile),
                 new PackageType("Playstation PSARC",
-                new string[] {"*.psarc","*.pak" },
-                PSARC.PSARCPackage.IsPSARC,
-                PSARC.PSARCPackage.FromFile)
+                  new string[] {"*.psarc","*.pak" },
+                  PSARC.PSARCPackage.IsPSARC,
+                  PSARC.PSARCPackage.FromFile),
+                new PackageType("Nintendo U8",
+                  new string[] { "*.app", "*.arc" },
+                  U8.U8Package.IsU8,
+                  U8.U8Package.FromFile),
               //new PackageType("", new string[] { }, null, null, null)
               };
     }
