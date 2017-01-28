@@ -191,7 +191,7 @@ namespace ArchiveExplorer
         else
         {
           p.Report("Extracting " + (i as IFile).Name);
-          (i as IFile).ExtractTo(Path.Combine(path, (i as IFile).Name));
+          (i as IFile).ExtractTo(Path.Combine(path, SafeName((i as IFile).Name)));
         }
       }
     }
