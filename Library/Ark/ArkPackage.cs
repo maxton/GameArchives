@@ -28,7 +28,7 @@ namespace GameArchives.Ark
   /// </summary>
   public class ArkPackage : AbstractPackage
   {
-    readonly static uint HIGHEST_VERSION = 7;
+    readonly static uint HIGHEST_VERSION = 10;
     readonly static uint LOWEST_VERSION = 2;
     readonly static uint ARK = 0x4B5241;
 
@@ -69,6 +69,7 @@ namespace GameArchives.Ark
           {
             version = decryptor.ReadUInt32LE();
           }
+          if (version == 0xFFFFFFF5) version = 10;
         }
         return version <= HIGHEST_VERSION 
           && version >= LOWEST_VERSION ? PackageTestResult.MAYBE : PackageTestResult.NO;
@@ -97,6 +98,11 @@ namespace GameArchives.Ark
           // hdr is encrypted, probably
           using (var decryptor = new HdrCryptStream(hdr))
           {
+            if(decryptor.ReadInt32LE() < 0)
+            {
+              decryptor.xor = 0xFF;
+            }
+            decryptor.Position = 0;
             byte[] arr = new byte[decryptor.Length];
             decryptor.Read(arr, 0, (int)decryptor.Length);
             actualHdr = new MemoryStream(arr);
@@ -160,7 +166,7 @@ namespace GameArchives.Ark
           }
 
           // Versions 6,7: appear to have checksums or something for each content file?
-          if (version >= 6)
+          if (version == 6 || version == 7)
           {
             uint numChecksums = header.ReadUInt32LE();
             header.Seek(4 * numChecksums, SeekOrigin.Current);
@@ -177,8 +183,8 @@ namespace GameArchives.Ark
         }
         contentFileMeta = new MultiStream(contentFiles);
 
-        // new in version 7: some sort of string table with game-specific data
-        if (version == 7)
+        // new in version 7+: some sort of string table with game-specific data
+        if (version >= 7)
         {
           uint root_count = header.ReadUInt32LE();
           while (root_count-- > 0)
@@ -188,7 +194,10 @@ namespace GameArchives.Ark
               header.Seek(header.ReadUInt32LE(), SeekOrigin.Current);
           }
         }
-        readFileTable(header, version, brokenv4);
+        if (version < 10)
+          readFileTable(header, version, brokenv4);
+        else
+          readNewFileTable(header);
       }
       else if (version == 2)
       {
@@ -200,6 +209,7 @@ namespace GameArchives.Ark
       }
     }
 
+    // "ARK" files have a completely different header
     private void readOldArkHeader(IFile hdrFile, Stream header)
     {
       root = new ArkDirectory(null, ROOT_DIR);
@@ -234,6 +244,10 @@ namespace GameArchives.Ark
       }
     }
 
+    /// <summary>
+    /// Read the filename table, which is a blob of strings,
+    /// then read the filename pointer table which links files to filenames
+    /// </summary>
     private void readFileTable(Stream header, uint version, bool brokenv4)
     {
       string[] fileNames = readFileNames(header);
@@ -309,6 +323,43 @@ namespace GameArchives.Ark
     }
 
     /// <summary>
+    /// Reads the new file table format in v10
+    /// </summary>
+    private void readNewFileTable(Stream header)
+    {
+      uint numFiles = header.ReadUInt32LE();
+      var files = new OffsetFile[numFiles];
+
+      for (var i = 0; i < numFiles; i++)
+      {
+        // Version 3 uses 32-bit file offsets
+        long arkFileOffset = header.ReadInt64LE();
+        string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
+        var flags = header.ReadInt32LE();
+        uint size = header.ReadUInt32LE();
+
+        var finalSlash = path.LastIndexOf('/');
+        var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
+        var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
+        var parent = makeOrGetDir(fileDir);
+        var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
+        file.ExtendedInfo["id"] = i;
+        file.ExtendedInfo["flags"] = flags;
+        files[i] = file;
+        parent.AddFile(file);
+      }
+      var numFiles2 = header.ReadUInt32LE();
+      if(numFiles != numFiles2)
+        throw new Exception("Ark header appears invalid (file count mismatch)");
+      for(var i = 0; i < numFiles2; i++)
+      {
+        files[i].ExtendedInfo["flags2"] = header.ReadInt32LE();
+      }
+
+
+    }
+
+    /// <summary>
     /// Get the directory at the end of this path, or make it (and all
     /// intermediate dirs) if it doesn't exist.
     /// </summary>
@@ -316,7 +367,7 @@ namespace GameArchives.Ark
     /// <returns></returns>
     private ArkDirectory makeOrGetDir(string path)
     {
-      if(path == null)
+      if(path == null || path == "")
       {
         path = ".";
       }

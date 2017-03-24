@@ -1,5 +1,5 @@
 ﻿/*
- * DtbCryptStream.cs
+ * HdrCryptStream.cs
  * 
  * Copyright (c) 2015,2016, maxton. All rights reserved.
  *
@@ -29,8 +29,9 @@ namespace GameArchives.Ark
     private int curKey;
     private long keypos;
     private Stream file;
+    public byte xor;
 
-    internal HdrCryptStream(Stream file)
+    internal HdrCryptStream(Stream file, byte xor = 0)
     {
       file.Position = 0;
       // The initial key is found in the first 4 bytes.
@@ -38,6 +39,7 @@ namespace GameArchives.Ark
       this.curKey = this.key;
       this.file = file;
       this.Length = file.Length - 4;
+      this.xor = xor;
     }
 
     public override bool CanRead => position < Length && position >= 0;
@@ -100,7 +102,7 @@ namespace GameArchives.Ark
 
       for (uint i = 0; i < bytesRead; i++)
       {
-        buffer[offset + i] ^= (byte)(this.curKey);
+        buffer[offset + i] ^= (byte)(this.curKey ^ xor);
         this.position++;
         updateKey();
       }
