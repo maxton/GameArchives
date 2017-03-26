@@ -1,7 +1,7 @@
 ﻿# GameArchives
 C# Library for reading video game archives, and example file browser ("ArchiveExplorer").
 
-# Downloading
+## Downloading
 You can get the most up-to-date release from [Appveyor](https://ci.appveyor.com/project/maxton/gamearchives/build/artifacts)
 (download the Release-x.x.x.x.zip file).
 
