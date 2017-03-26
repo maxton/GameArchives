@@ -1,6 +1,10 @@
 ﻿# GameArchives
 C# Library for reading video game archives, and example file browser ("ArchiveExplorer").
 
+# Downloading
+You can get the most up-to-date release from [Appveyor](https://ci.appveyor.com/project/maxton/gamearchives/build/artifacts)
+(download the Release-x.x.x.x.zip file).
+
 ## Supported Archive Formats
 ### Ark (*.hdr, *.ark)
 This format is used in many Harmonix games, including but not limited to:
