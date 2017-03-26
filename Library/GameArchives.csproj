@@ -54,6 +54,7 @@
     <Compile Include="Ark\ArkDirectory.cs" />
     <Compile Include="Ark\ArkPackage.cs" />
     <Compile Include="Ark\HdrCryptStream.cs" />
+    <Compile Include="Ark\ProtectedFileStream.cs" />
     <Compile Include="Common\DefaultDirectory.cs" />
     <Compile Include="Common\OffsetFile.cs" />
     <Compile Include="Common\MultiStream.cs" />

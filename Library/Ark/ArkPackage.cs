@@ -1,7 +1,7 @@
 ﻿/*
  * ArkPackage.cs
  * 
- * Copyright (c) 2015,2016, maxton. All rights reserved.
+ * Copyright (c) 2015,2016,2017 maxton. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -162,6 +162,18 @@ namespace GameArchives.Ark
           for (var i = 0; i < numArkPaths; i++)
           {
             IFile arkFile = hdrFile.Parent.GetFile(header.ReadLengthUTF8().Split('/').Last());
+            if(version == 10)
+            {
+              using(var tmpStream = arkFile.GetStream())
+              {
+                tmpStream.Seek(-32, SeekOrigin.End);
+                if(tmpStream.ReadASCIINullTerminated(32) == "mcnxyxcmvmcxyxcmskdldkjshagsdhfj")
+                {
+                  contentFiles[i] = new ProtectedFileStream(arkFile.GetStream());
+                  continue;
+                }
+              }
+            }
             contentFiles[i] = arkFile.GetStream();
           }
 
