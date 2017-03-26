@@ -164,15 +164,16 @@ namespace GameArchives.Ark
             IFile arkFile = hdrFile.Parent.GetFile(header.ReadLengthUTF8().Split('/').Last());
             if(version == 10)
             {
-              using(var tmpStream = arkFile.GetStream())
+              var tmpStream = arkFile.GetStream();
+              tmpStream.Seek(-32, SeekOrigin.End);
+
+              if (tmpStream.ReadASCIINullTerminated(32) == "mcnxyxcmvmcxyxcmskdldkjshagsdhfj")
               {
-                tmpStream.Seek(-32, SeekOrigin.End);
-                if(tmpStream.ReadASCIINullTerminated(32) == "mcnxyxcmvmcxyxcmskdldkjshagsdhfj")
-                {
-                  contentFiles[i] = new ProtectedFileStream(arkFile.GetStream());
-                  continue;
-                }
+                contentFiles[i] = new ProtectedFileStream(tmpStream);
+                continue;
               }
+              else
+                tmpStream.Close();
             }
             contentFiles[i] = arkFile.GetStream();
           }
