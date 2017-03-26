@@ -123,6 +123,10 @@ namespace GameArchives.Ark
         pkg.Position = data_offset + _position - 1;
         key = (byte)((metadata[5] ^ pkg.ReadByte()) - _position + 1);
       }
+      else if(_position == 0)
+      {
+        key = metadata[5];
+      }
 
       return _position;
     }
