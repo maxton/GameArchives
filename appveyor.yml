@@ -1,0 +1,21 @@
+version: 0.11.2.{build}
+
+image: Visual Studio 2015
+
+configuration: Release
+platform: Any CPU
+
+build:
+  project: GameArchives.sln
+
+after_build:
+ - >
+   7z a Release-%APPVEYOR_BUILD_VERSION%.zip 
+   %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\ArchiveExplorer.exe 
+   %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\GameArchives.dll
+   %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\GameArchives.xml
+   %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\LICENSE
+   %APPVEYOR_BUILD_FOLDER%\README.md
+   
+artifacts:
+ - path: Release-%APPVEYOR_BUILD_VERSION%.zip
