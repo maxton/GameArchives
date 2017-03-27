@@ -55,11 +55,9 @@ namespace GameArchives.Ark
     }
 
     /// <summary>
-    /// Constructs a new offset stream on the given base stream with the given offset and length.
+    /// Constructs a new protected file stream from the given base stream.
     /// </summary>
     /// <param name="package">The base stream</param>
-    /// <param name="offset">Offset into the base stream where this stream starts</param>
-    /// <param name="length">Number of bytes in this stream</param>
     public ProtectedFileStream(Stream package)
     {
       this.pkg = package;
@@ -68,7 +66,7 @@ namespace GameArchives.Ark
       package.Seek(-size, SeekOrigin.End);
       var metadata = new byte[size];
       package.Read(metadata, 0, size);
-      initialKey = init_prot_data(metadata);
+      initialKey = CalculateKeyByte(metadata);
 
       data_offset = 0;
       Length = package.Length - size;
@@ -131,7 +129,7 @@ namespace GameArchives.Ark
       return _position;
     }
 
-    private static uint rol(uint value, int count)
+    private static uint RotL(uint value, int count)
     {
       const int bits = 32;
       count %= bits;
@@ -147,7 +145,7 @@ namespace GameArchives.Ark
       return (byte)(value >> (num * 8));
     }
 
-    private static uint mangle(byte[] bytes, int offset, int count)
+    private static uint Mangle(byte[] bytes, int offset, int count)
     {
       var mangled = 0U;
       for(var i = 0; i < count; i++)
@@ -157,12 +155,12 @@ namespace GameArchives.Ark
       return mangled;
     }
 
-    private static uint collapse(uint value)
+    private static uint Fold(uint value)
     {
       return (uint)(BYTE(0, value) + BYTE(1, value) + BYTE(2, value) + BYTE(3, value));
     }
 
-    public static uint do_hash(byte[] key, int offset, long count)
+    private static uint Hash(byte[] key, int offset, long count)
     {
       uint tmp;
 
@@ -170,9 +168,9 @@ namespace GameArchives.Ark
       var seed = 0xE3AFEC21;
       for (var i = 0L; i < count; i++)
       {
-        tmp = (key[offset + i] ^ collapse(seed));
+        tmp = (key[offset + i] ^ Fold(seed));
         key[offset + i] = (byte)tmp;
-        seed = rol((tmp | ((tmp | ((tmp | (tmp << 8)) << 8)) << 8)) + rol(seed, (int)(tmp & 0x1F)), 1);
+        seed = RotL((tmp | ((tmp | ((tmp | (tmp << 8)) << 8)) << 8)) + RotL(seed, (int)(tmp & 0x1F)), 1);
         if (counter > 16)
         {
           seed = (2 * seed);
@@ -183,22 +181,22 @@ namespace GameArchives.Ark
       return seed;
     }
 
-    public static byte init_prot_data(byte[] metadata)
+    private static byte CalculateKeyByte(byte[] metadata)
     {
       var word_0xE = BitConverter.ToUInt16(metadata, 0xE);
 
-      byte mangled = (byte)collapse(
-        mangle(metadata, 4, 9) + 
-        mangle(metadata, 0, 4) + 
-        mangle(metadata, 13, 1) + 
-        mangle(metadata, 16, 4) +
-        (word_0xE == 0 ? 0 : mangle(metadata, 24, word_0xE)));
+      byte mangled = (byte)Fold(
+        Mangle(metadata, 4, 9) + 
+        Mangle(metadata, 0, 4) + 
+        Mangle(metadata, 13, 1) + 
+        Mangle(metadata, 16, 4) +
+        Mangle(metadata, 24, word_0xE));
 
-      do_hash(metadata, 24, word_0xE);
-      do_hash(metadata, 13, 1);
-      do_hash(metadata, 16, 4);
-      do_hash(metadata, 0, 4);
-      do_hash(metadata, 4, 9);
+      Hash(metadata, 24, word_0xE);
+      Hash(metadata, 13, 1);
+      Hash(metadata, 16, 4);
+      Hash(metadata, 0, 4);
+      Hash(metadata, 4, 9);
       
       return (byte)(metadata[5] ^ mangled);
     }
