@@ -37,7 +37,7 @@ namespace GameArchives.Ark
 
     private Stream pkg;
     private long data_offset;
-    private byte[] metadata;
+    private byte initialKey;
     private byte key;
 
     private long _position;
@@ -66,9 +66,9 @@ namespace GameArchives.Ark
       package.Seek(-36, SeekOrigin.End);
       var size = package.ReadInt32LE();
       package.Seek(-size, SeekOrigin.End);
-      metadata = new byte[size];
+      var metadata = new byte[size];
       package.Read(metadata, 0, size);
-      init_prot_data(metadata);
+      initialKey = init_prot_data(metadata);
 
       data_offset = 0;
       Length = package.Length - size;
@@ -89,7 +89,7 @@ namespace GameArchives.Ark
       {
         byte tmp = buffer[offset+i];
         buffer[offset+i] ^= key;
-        key = (byte)((metadata[5] ^ tmp) - _position);
+        key = (byte)((initialKey ^ tmp) - _position);
         _position++;
       }
       return bytes_read;
@@ -121,11 +121,11 @@ namespace GameArchives.Ark
       if(_position > 0)
       {
         pkg.Position = data_offset + _position - 1;
-        key = (byte)((metadata[5] ^ pkg.ReadByte()) - _position + 1);
+        key = (byte)((initialKey ^ pkg.ReadByte()) - _position + 1);
       }
       else if(_position == 0)
       {
-        key = metadata[5];
+        key = initialKey;
       }
 
       return _position;
@@ -183,23 +183,16 @@ namespace GameArchives.Ark
       return seed;
     }
 
-    public static void init_prot_data(byte[] metadata)
+    public static byte init_prot_data(byte[] metadata)
     {
       var word_0xE = BitConverter.ToUInt16(metadata, 0xE);
-      uint size = (uint)metadata.Length;
-
-      var mangled_24 = 0U;
-      if (word_0xE != 0)
-      {
-        mangled_24 = mangle(metadata, 24, word_0xE);
-      }
 
       byte mangled = (byte)collapse(
         mangle(metadata, 4, 9) + 
         mangle(metadata, 0, 4) + 
         mangle(metadata, 13, 1) + 
-        mangle(metadata, 16, 4) + 
-        mangled_24);
+        mangle(metadata, 16, 4) +
+        (word_0xE == 0 ? 0 : mangle(metadata, 24, word_0xE)));
 
       do_hash(metadata, 24, word_0xE);
       do_hash(metadata, 13, 1);
@@ -207,11 +200,7 @@ namespace GameArchives.Ark
       do_hash(metadata, 0, 4);
       do_hash(metadata, 4, 9);
       
-      metadata[20] = BYTE(0, size);
-      metadata[21] = BYTE(1, size);
-      metadata[22] = BYTE(2, size);
-      metadata[23] = BYTE(3, size);
-      metadata[5] ^= mangled;
+      return (byte)(metadata[5] ^ mangled);
     }
 
     #region Not Supported
