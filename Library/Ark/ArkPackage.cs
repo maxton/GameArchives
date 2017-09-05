@@ -110,11 +110,18 @@ namespace GameArchives.Ark
           version = actualHdr.ReadUInt32LE();
         }
         if (version == ARK)
-          readOldArkHeader(hdrFile, actualHdr);
+        {
+          actualHdr.Close();
+          readOldArkHeader(hdrFile);
+        }
         else if (version <= HIGHEST_VERSION && version >= LOWEST_VERSION)
+        {
           readHeader(actualHdr, hdrFile, version);
+        }
         else
+        {
           throw new NotSupportedException($"Given ark file is not supported. (version {version}).");
+        }
       }
     }
 
@@ -223,10 +230,11 @@ namespace GameArchives.Ark
     }
 
     // "ARK" files have a completely different header
-    private void readOldArkHeader(IFile hdrFile, Stream header)
+    private void readOldArkHeader(IFile hdrFile)
     {
       root = new ArkDirectory(null, ROOT_DIR);
       contentFileMeta = hdrFile.GetStream();
+      var header = contentFileMeta;
       header.Position = 8;
       long fileTableOffset = header.ReadUInt32LE();
       uint numFiles = header.ReadUInt32LE();
