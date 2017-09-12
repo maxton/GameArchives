@@ -353,49 +353,26 @@ namespace GameArchives.Ark
       uint numFiles = header.ReadUInt32LE();
       var files = new OffsetFile[numFiles];
 
-      if (readHash)
+      for (var i = 0; i < numFiles; i++)
       {
-        for (var i = 0; i < numFiles; i++)
-        {
-          // Version 3 uses 32-bit file offsets
-          long arkFileOffset = header.ReadInt64LE();
-          string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
-          var flags = header.ReadInt32LE();
-          uint size = header.ReadUInt32LE();
-          header.ReadUInt32LE();
+        // Version 3 uses 32-bit file offsets
+        long arkFileOffset = header.ReadInt64LE();
+        string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
+        var flags = header.ReadInt32LE();
+        uint size = header.ReadUInt32LE();
+        if (readHash) header.Seek(4, SeekOrigin.Current); // Skips checksum
 
-          var finalSlash = path.LastIndexOf('/');
-          var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
-          var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
-          var parent = makeOrGetDir(fileDir);
-          var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
-          file.ExtendedInfo["id"] = i;
-          file.ExtendedInfo["flags"] = flags;
-          files[i] = file;
-          parent.AddFile(file);
-        }
+        var finalSlash = path.LastIndexOf('/');
+        var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
+        var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
+        var parent = makeOrGetDir(fileDir);
+        var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
+        file.ExtendedInfo["id"] = i;
+        file.ExtendedInfo["flags"] = flags;
+        files[i] = file;
+        parent.AddFile(file);
       }
-      else
-      {
-        for (var i = 0; i < numFiles; i++)
-        {
-          // Version 3 uses 32-bit file offsets
-          long arkFileOffset = header.ReadInt64LE();
-          string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
-          var flags = header.ReadInt32LE();
-          uint size = header.ReadUInt32LE();
 
-          var finalSlash = path.LastIndexOf('/');
-          var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
-          var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
-          var parent = makeOrGetDir(fileDir);
-          var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
-          file.ExtendedInfo["id"] = i;
-          file.ExtendedInfo["flags"] = flags;
-          files[i] = file;
-          parent.AddFile(file);
-        }
-      }
       var numFiles2 = header.ReadUInt32LE();
       if(numFiles != numFiles2)
         throw new Exception("Ark header appears invalid (file count mismatch)");
