@@ -9,14 +9,14 @@ You can get the most up-to-date release from [Appveyor](https://ci.appveyor.com/
 ### Ark (*.hdr, *.ark)
 This format is used in many Harmonix games, including but not limited to:
 * Frequency
-* Amplitude (the PS2 version)
+* Amplitude (PS2/PS3 versions)
 * Guitar Hero 1 - 2, Encore: Rocks the 80s
 * Rock Band 1 - 3, Lego, Green Day, Beatles, VR
 * Karaoke Revolution (untested)
 * MAGMA (RBN Authoring Tool, PC)
 * Disney Fantasia: Music Evolved
 
-Versions 1 through 7 and version 10 are supported at this time.
+Versions 1 through 7, 9, and 10 are supported at this time.
 (version 1 arks begin with "ARK")
 
 ### FSG-FILE-SYSTEM (DISC0.img)
