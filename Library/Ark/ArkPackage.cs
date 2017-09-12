@@ -70,6 +70,8 @@ namespace GameArchives.Ark
             version = decryptor.ReadUInt32LE();
           }
           if (version == 0xFFFFFFF5) version = 10;
+          else if (version == 0xFFFFFFF6) version = 9;
+          else if (version == 0xFFFFFFF7) version = 8; // Hopefully?
         }
         return version <= HIGHEST_VERSION 
           && version >= LOWEST_VERSION ? PackageTestResult.MAYBE : PackageTestResult.NO;
@@ -185,8 +187,8 @@ namespace GameArchives.Ark
             contentFiles[i] = arkFile.GetStream();
           }
 
-          // Versions 6,7: appear to have checksums or something for each content file?
-          if (version == 6 || version == 7)
+          // Versions 6,7,9: appear to have checksums or something for each content file?
+          if (version >= 6 && version <= 9)
           {
             uint numChecksums = header.ReadUInt32LE();
             header.Seek(4 * numChecksums, SeekOrigin.Current);
@@ -214,10 +216,10 @@ namespace GameArchives.Ark
               header.Seek(header.ReadUInt32LE(), SeekOrigin.Current);
           }
         }
-        if (version < 10)
+        if (version < 8) // Gonna assume 8 has new file table
           readFileTable(header, version, brokenv4);
         else
-          readNewFileTable(header);
+          readNewFileTable(header, version < 10);
       }
       else if (version == 2)
       {
@@ -344,30 +346,55 @@ namespace GameArchives.Ark
     }
 
     /// <summary>
-    /// Reads the new file table format in v10
+    /// Reads the new file table format in v9 and v10
     /// </summary>
-    private void readNewFileTable(Stream header)
+    private void readNewFileTable(Stream header, bool readHash = false)
     {
       uint numFiles = header.ReadUInt32LE();
       var files = new OffsetFile[numFiles];
 
-      for (var i = 0; i < numFiles; i++)
+      if (readHash)
       {
-        // Version 3 uses 32-bit file offsets
-        long arkFileOffset = header.ReadInt64LE();
-        string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
-        var flags = header.ReadInt32LE();
-        uint size = header.ReadUInt32LE();
+        for (var i = 0; i < numFiles; i++)
+        {
+          // Version 3 uses 32-bit file offsets
+          long arkFileOffset = header.ReadInt64LE();
+          string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
+          var flags = header.ReadInt32LE();
+          uint size = header.ReadUInt32LE();
+          header.ReadUInt32LE();
 
-        var finalSlash = path.LastIndexOf('/');
-        var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
-        var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
-        var parent = makeOrGetDir(fileDir);
-        var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
-        file.ExtendedInfo["id"] = i;
-        file.ExtendedInfo["flags"] = flags;
-        files[i] = file;
-        parent.AddFile(file);
+          var finalSlash = path.LastIndexOf('/');
+          var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
+          var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
+          var parent = makeOrGetDir(fileDir);
+          var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
+          file.ExtendedInfo["id"] = i;
+          file.ExtendedInfo["flags"] = flags;
+          files[i] = file;
+          parent.AddFile(file);
+        }
+      }
+      else
+      {
+        for (var i = 0; i < numFiles; i++)
+        {
+          // Version 3 uses 32-bit file offsets
+          long arkFileOffset = header.ReadInt64LE();
+          string path = header.ReadLengthPrefixedString(System.Text.Encoding.UTF8);
+          var flags = header.ReadInt32LE();
+          uint size = header.ReadUInt32LE();
+
+          var finalSlash = path.LastIndexOf('/');
+          var fileDir = path.Substring(0, finalSlash < 0 ? 0 : finalSlash);
+          var fileName = path.Substring(finalSlash < 0 ? 0 : (finalSlash + 1));
+          var parent = makeOrGetDir(fileDir);
+          var file = new OffsetFile(fileName, parent, contentFileMeta, arkFileOffset, size);
+          file.ExtendedInfo["id"] = i;
+          file.ExtendedInfo["flags"] = flags;
+          files[i] = file;
+          parent.AddFile(file);
+        }
       }
       var numFiles2 = header.ReadUInt32LE();
       if(numFiles != numFiles2)
