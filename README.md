@@ -55,3 +55,6 @@ This is the file system used on Xbox and Xbox 360 game discs.
 ### U8 (*.arc, *.app, etc)
 This is a simple archive format commonly used in Wii games and system software,
 which gets its name from the printable ASCII characters in its magic number.
+
+### PACKAGE (*.pkf, *.themes)
+Unencrypted archive format used in SingStar games on PS3.

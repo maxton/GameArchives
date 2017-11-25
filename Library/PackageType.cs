@@ -112,6 +112,11 @@ namespace GameArchives
                   new string[] { "*.app", "*.arc" },
                   U8.U8Package.IsU8,
                   U8.U8Package.FromFile),
+                new PackageType("PS3 SingStar Package",
+                  new string[] { "*.pkf", "*.themes" },
+                  PKF.PKFPackage.IsPKF,
+                  PKF.PKFPackage.OpenFile
+                ),
               //new PackageType("", new string[] { }, null, null, null)
               };
     }
