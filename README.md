@@ -11,7 +11,7 @@ This format is used in many Harmonix games, including but not limited to:
 * Frequency
 * Amplitude (PS2/PS3 versions)
 * Guitar Hero 1 - 2, Encore: Rocks the 80s
-* Rock Band 1 - 3, Lego, Green Day, Beatles, VR
+* Rock Band 1 - 4, Lego, Green Day, Beatles, VR
 * Karaoke Revolution (untested)
 * MAGMA (RBN Authoring Tool, PC)
 * Disney Fantasia: Music Evolved
