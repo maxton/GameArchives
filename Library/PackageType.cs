@@ -117,6 +117,11 @@ namespace GameArchives
                   PKF.PKFPackage.IsPKF,
                   PKF.PKFPackage.OpenFile
                 ),
+                new PackageType("Seven45 hdr/pk",
+                  new string[] { "*.hdr.e.2" },
+                  Seven45.Seven45Package.IsSeven45,
+                  Seven45.Seven45Package.OpenFile
+                ),
               //new PackageType("", new string[] { }, null, null, null)
               };
     }

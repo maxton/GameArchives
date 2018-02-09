@@ -58,3 +58,6 @@ which gets its name from the printable ASCII characters in its magic number.
 
 ### PACKAGE (*.pkf, *.themes)
 Unencrypted archive format used in SingStar games on PS3.
+
+### Seven45 PK (*.hdr.e.2)
+Archive format with an encrypted header used in Power Gig: Rise of the SixString by Seven45 Studios.
