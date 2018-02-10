@@ -9,7 +9,7 @@ namespace GameArchives.Seven45
 {
   public class PowerChordCryptStream : Stream
   {
-    static readonly byte[] header_key =
+    private readonly byte[] header_key =
     {
       0xbb, 0xfd, 0xf6, 0xd3, 0x12, 0x98, 0x94, 0xf0,
       0x5b, 0xd8, 0x62, 0xf7, 0xdb, 0x17, 0x5a, 0x51,
@@ -17,11 +17,12 @@ namespace GameArchives.Seven45
       0x6a, 0x46, 0x2e, 0x00, 0x84, 0x70, 0xeb, 0xd6
     };
 
-    static readonly byte[] header_iv =
+    private readonly byte[] header_iv =
     {
       0xa2, 0xae, 0x14, 0xb4, 0x35, 0x17, 0x72, 0xbe,
       0x55, 0xcc, 0x48, 0x7b, 0xdf, 0xa0, 0x1b, 0xa6
     };
+
 
     const int BLOCK_SIZE = 512;
     const long BLOCK_MASK = ~511L;
@@ -29,6 +30,7 @@ namespace GameArchives.Seven45
     private static readonly long data_offset = 512;
     private long position;
     private Aes aes;
+    private byte[] headerBlock = new byte[BLOCK_SIZE];
     private byte[] chunkBuffer = new byte[BLOCK_SIZE + 16];
     private byte[] key;
     private byte[] iv;
@@ -43,11 +45,15 @@ namespace GameArchives.Seven45
 
     public override long Position { get => position; set => Seek(value, SeekOrigin.Begin); }
 
-    public PowerChordCryptStream(Stream file, byte[] key = null, byte[] iv = null)
+    public PowerChordCryptStream(Stream file, byte[] key = null, byte[] iv = null, byte[] h_iv = null)
     {
       if(file.Length < BLOCK_SIZE)
       {
         throw new Exception("File is not large enough to be .e.2 encrypted");
+      }
+      if(h_iv != null)
+      {
+        Buffer.BlockCopy(h_iv, 0, header_iv, 0, 16);
       }
       this.base_ = file;
       position = 0;
@@ -63,6 +69,7 @@ namespace GameArchives.Seven45
       {
         d.TransformBlock(chunkBuffer, 0, BLOCK_SIZE + 16, chunkBuffer, 0);
       }
+      Buffer.BlockCopy(chunkBuffer, 0, headerBlock, 0, BLOCK_SIZE);
       if (iv == null) {
         this.iv = new byte[16];
         Buffer.BlockCopy(chunkBuffer, 0, this.iv, 0, 16);
@@ -82,6 +89,11 @@ namespace GameArchives.Seven45
       }
       
       UpdateBuffer();
+    }
+
+    public byte[] GetHeader()
+    {
+      return (byte[])headerBlock.Clone();
     }
 
     private void UpdateBuffer()

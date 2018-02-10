@@ -6,8 +6,14 @@ using System.Text;
 
 namespace GameArchives.Seven45
 {
-  class Seven45Package : AbstractPackage
+  public class Seven45Package : AbstractPackage
   {
+    // Ugly hack since I can't figure out IV generation
+    public static readonly byte[] header_iv_ps4 =
+    {
+      0x0A, 0x58, 0xB8, 0xDE, 0x0A, 0x71, 0x03, 0x44, 0x5C, 0x73, 0x71, 0x7F, 0xDA, 0xCE, 0x2B, 0x64
+    };
+
     private Stream headerStream;
     private Stream[] contentFiles;
     private Common.DefaultDirectory root;
@@ -17,12 +23,14 @@ namespace GameArchives.Seven45
       if (fn.Name.ToLower().EndsWith(".hdr.e.2"))
       {
         using (var stream = fn.GetStream())
-        using (var s = new PowerChordCryptStream(stream))
         {
-          if (s.ReadUInt32LE() == 0x745)
-          {
-            return PackageTestResult.YES;
-          }
+          using (var s = new PowerChordCryptStream(stream))
+            if (s.ReadUInt32LE() == 0x745)
+              return PackageTestResult.YES;
+
+          using (var s = new PowerChordCryptStream(stream, h_iv: header_iv_ps4))
+            if (s.ReadUInt32LE() == 0x745)
+              return PackageTestResult.YES;
         }
       }
       return PackageTestResult.NO;
@@ -32,21 +40,18 @@ namespace GameArchives.Seven45
     {
       return new Seven45Package(f);
     }
-
-    // Only one game uses this format and there is no datafile count in the header...
-    const int NUM_DATA_FILES = 3;
+    
     private Seven45Package(IFile f)
     {
       FileName = f.Name;
-      headerStream = new PowerChordCryptStream(f.GetStream());
-      contentFiles = new Stream[NUM_DATA_FILES];
-      root = new Common.DefaultDirectory(null, "/");
-      var baseName = f.Name.Replace(".hdr.e.2", "");
-      for(var x = 0; x < NUM_DATA_FILES; x++)
+      var stream = f.GetStream();
+      headerStream = new PowerChordCryptStream(stream);
+      if(headerStream.ReadInt32LE() != 0x745)
       {
-        contentFiles[x] = f.Parent.GetFile($"{baseName}.pk{x}").GetStream();
+        headerStream = new PowerChordCryptStream(stream, h_iv: header_iv_ps4);
       }
-      ParseHeader();
+      root = new Common.DefaultDirectory(null, "/");
+      ParseHeader(f);
     }
 
     private class Header
@@ -127,10 +132,10 @@ namespace GameArchives.Seven45
       };
     }
 
-    private void ParseHeader()
+    private void ParseHeader(IFile f)
     {
       headerStream.Position = 0;
-
+      var numDataFiles = 0;
       var header = Header.Read(headerStream);
       var fileEntries = new FileEntry[header.num_files];
       for(var i = 0; i < fileEntries.Length; i++)
@@ -156,6 +161,7 @@ namespace GameArchives.Seven45
       for(var i = 0; i < fileOffsets.Length; i++)
       {
         fileOffsets[i] = OffsetEntry.Read(headerStream);
+        if (fileOffsets[i].pk_num > numDataFiles) numDataFiles = fileOffsets[i].pk_num;
       }
 
       var dirs_flat = new Common.DefaultDirectory[header.num_dirs];
@@ -166,7 +172,14 @@ namespace GameArchives.Seven45
         parent.AddDir(dirs_flat[i] = new Common.DefaultDirectory(parent, stringTable[dirEntries[i].string_num]));
       }
 
-      for(var i = 0; i < fileEntries.Length; i++)
+      contentFiles = new Stream[numDataFiles + 1];
+      var baseName = f.Name.Replace(".hdr.e.2", "");
+      for (var i = 0; i <= numDataFiles; i++)
+      {
+        contentFiles[i] = f.Parent.GetFile($"{baseName}.pk{i}").GetStream();
+      }
+
+      for (var i = 0; i < fileEntries.Length; i++)
       {
         var entry = fileEntries[i];
         var name = entry.string_num < stringTable.Length ? stringTable[entry.string_num] : "ERROR_FILENAME";
