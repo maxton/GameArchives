@@ -42,6 +42,7 @@ namespace GameArchives.Common
 
     private Stream img_file;
     private long data_offset;
+    private const int BUFFER_SIZE = 8192;
 
     /// <summary>
     /// Constructs a new OffsetFile
@@ -73,7 +74,7 @@ namespace GameArchives.Common
 
     public Stream GetStream()
     {
-      return new OffsetStream(img_file, data_offset, Size);
+      return new BufferedStream(new OffsetStream(img_file, data_offset, Size), BUFFER_SIZE);
     }
   }
 }
