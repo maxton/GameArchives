@@ -17,7 +17,6 @@ This format is used in many Harmonix games, including but not limited to:
 * Disney Fantasia: Music Evolved
 
 Versions 1 through 7, 9, and 10 are supported at this time.
-(version 1 arks begin with "ARK")
 
 ### FSG-FILE-SYSTEM (DISC0.img)
 This format is used in some FreeStyleGames games, including:

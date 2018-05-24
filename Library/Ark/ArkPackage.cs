@@ -29,7 +29,7 @@ namespace GameArchives.Ark
   public class ArkPackage : AbstractPackage
   {
     readonly static uint HIGHEST_VERSION = 10;
-    readonly static uint LOWEST_VERSION = 2;
+    readonly static uint LOWEST_VERSION = 1;
     readonly static uint ARK = 0x4B5241;
 
     private ArkDirectory root;
@@ -221,9 +221,9 @@ namespace GameArchives.Ark
         else
           readNewFileTable(header, version < 10);
       }
-      else if (version == 2)
+      else if (version == 1 || version == 2)
       {
-        // Version 2: Here be file records. Skip 'em for now.
+        // Version 1,2: Here be file records. Skip 'em for now.
         uint numRecords = header.ReadUInt32LE();
         header.Seek(numRecords * 20, SeekOrigin.Current);
         contentFileMeta = hdrFile.GetStream();
@@ -273,7 +273,7 @@ namespace GameArchives.Ark
     /// </summary>
     private void readFileTable(Stream header, uint version, bool brokenv4)
     {
-      string[] fileNames = readFileNames(header);
+      string[] fileNames = readFileNames(header, version != 1);
       if (version > 2)
       {
         // Version 3+:
@@ -294,9 +294,11 @@ namespace GameArchives.Ark
       for (var i = 0; i < numFiles; i++)
       {
         // Version 3 uses 32-bit file offsets
-        long arkFileOffset = (brokenv4 || version <= 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
+        long arkFileOffset = 0;
+        if (version != 1) arkFileOffset = (brokenv4 || version <= 3 ? header.ReadUInt32LE() : header.ReadInt64LE());
         int filenameStringId = header.ReadInt32LE();
         int dirStringId = header.ReadInt32LE();
+        if (version == 1) arkFileOffset = header.ReadUInt32LE();
         uint size = header.ReadUInt32LE();
         uint zero = header.ReadUInt32LE();
         // Version 7 uses this differently. now, files marked as 0 should be skipped,
@@ -309,9 +311,19 @@ namespace GameArchives.Ark
       }
     }
 
-    private string[] readFileNames(Stream header)
+    private string[] readFileNames(Stream header, bool nullTerminated)
     {
       fileNameTableSize = header.ReadUInt32LE();
+
+      if (!nullTerminated)
+      {
+        // Reads array of fixed-length strings
+        string[] strings = new string[fileNameTableSize];
+        for (int i = 0; i < fileNameTableSize; i++)
+          strings[i] = header.ReadLengthUTF8();
+
+        return strings;
+      }
 
       // Save position of filename table for later.
       fileNameTableOffset = header.Position;
