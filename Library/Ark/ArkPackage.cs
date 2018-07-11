@@ -174,15 +174,17 @@ namespace GameArchives.Ark
             if(version == 10)
             {
               var tmpStream = arkFile.GetStream();
-              tmpStream.Seek(-32, SeekOrigin.End);
-
-              if (tmpStream.ReadASCIINullTerminated(32) == "mcnxyxcmvmcxyxcmskdldkjshagsdhfj")
+              if (tmpStream.Length > 32)
               {
-                contentFiles[i] = new ProtectedFileStream(tmpStream);
-                continue;
+                tmpStream.Seek(-32, SeekOrigin.End);
+
+                if (tmpStream.ReadASCIINullTerminated(32) == "mcnxyxcmvmcxyxcmskdldkjshagsdhfj")
+                {
+                  contentFiles[i] = new ProtectedFileStream(tmpStream);
+                  continue;
+                }
               }
-              else
-                tmpStream.Close();
+              tmpStream.Close();
             }
             contentFiles[i] = arkFile.GetStream();
           }
