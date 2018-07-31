@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArchiveExplorer
+namespace LibArchiveExplorer
 {
-  class PackageManager
+  public class PackageManager
   {
     private static PackageManager _pm;
     public static PackageManager GetInstance()

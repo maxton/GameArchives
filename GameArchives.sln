@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameArchives", "Library\GameArchives.csproj", "{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchiveExplorer", "ArchiveExplorer\ArchiveExplorer.csproj", "{EAC2E703-6D41-4E69-B14D-D881A3C9909C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibArchiveExplorer", "LibArchiveExplorer\LibArchiveExplorer.csproj", "{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,8 +28,17 @@ Global
 		{EAC2E703-6D41-4E69-B14D-D881A3C9909C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EAC2E703-6D41-4E69-B14D-D881A3C9909C}.Release-minimal|Any CPU.ActiveCfg = Release|Any CPU
 		{EAC2E703-6D41-4E69-B14D-D881A3C9909C}.Release-minimal|Any CPU.Build.0 = Release|Any CPU
+		{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}.Release-minimal|Any CPU.ActiveCfg = Release|Any CPU
+		{29722AA8-E9FC-4B5B-9C73-31A6293DBA55}.Release-minimal|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DEF13207-4D07-42E5-8F0E-69817D41B933}
 	EndGlobalSection
 EndGlobal

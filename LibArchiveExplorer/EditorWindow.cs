@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ArchiveExplorer
+namespace LibArchiveExplorer
 {
   public partial class EditorWindow : Form
   {

@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace ArchiveExplorer
+namespace LibArchiveExplorer
 {
-  public static class Extensions
+  static class Extensions
   {
     public static string HumanReadableFileSize(this long size)
     { 

@@ -12,7 +12,7 @@ using GameArchives;
 using System.IO;
 using FolderSelect;
 
-namespace ArchiveExplorer
+namespace LibArchiveExplorer
 {
   [Designer("System.Windows.Forms.Design.ParentControlDesigner, System.Design", typeof(IDesigner))]
   public partial class PackageView : UserControl
@@ -26,12 +26,18 @@ namespace ArchiveExplorer
 
     private EditorWindow ew;
 
-    public PackageView(AbstractPackage pkg)
+    public delegate void FileOpenEventHandler(IFile file);
+    public delegate void RemoveTabEventHandler(TabPage t);
+
+    public event FileOpenEventHandler OnFileOpen;
+    public event RemoveTabEventHandler OnRemoveTab;
+
+    public PackageView(AbstractPackage pkg, PackageManager pm)
     {
       InitializeComponent();
       InitCustomComponents();
 
-      pm = PackageManager.GetInstance();
+      this.pm = pm;
       children = new List<PackageView>(0);
       currentPackage = pkg;
       currentDirectory = currentPackage.RootDirectory;
@@ -97,7 +103,7 @@ namespace ArchiveExplorer
       currentDirectory = null;
       FillFileView();
       ResetBreadcrumbs();
-      (this.FindForm() as ArchiveExplorer).RemoveTab(this.Tag as TabPage);
+      OnRemoveTab?.Invoke(Tag as TabPage);
     }
 
     private void FillFileView()
@@ -279,6 +285,23 @@ namespace ArchiveExplorer
       catch (Exception ex)
       {
         MessageBox.Show(ex.Message);
+      }
+    }
+
+    private void printExtendedInfoToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      foreach (ListViewItem selItem in fileView.SelectedItems)
+      {
+        if (selItem.Tag is IFile)
+        {
+          var f = selItem.Tag as IFile;
+          var sb = new StringBuilder();
+          foreach(var kvp in f.ExtendedInfo)
+          {
+            sb.AppendFormat("{0}: {1}\r\n", kvp.Key, kvp.Value.ToString());
+          }
+          MessageBox.Show(sb.ToString());
+        }
       }
     }
   }

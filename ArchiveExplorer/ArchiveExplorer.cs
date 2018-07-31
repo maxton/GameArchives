@@ -29,6 +29,7 @@ using System.Windows.Forms;
 using GameArchives;
 using System.IO;
 using FolderSelect;
+using LibArchiveExplorer;
 
 namespace ArchiveExplorer
 {
@@ -67,7 +68,8 @@ namespace ArchiveExplorer
       try
       {
         var newPackage = await Task.Run(() => PackageReader.ReadPackageFromFile(file));
-        packageView = new PackageView(newPackage);
+        packageView = new PackageView(newPackage, pm);
+        packageView.OnRemoveTab += RemoveTab;
         newPage.Text = newPackage.FileName;
         newPage.Controls.Add(packageView);
         packageView.Tag = newPage;
