@@ -59,6 +59,7 @@ namespace LibArchiveExplorer
 
     public async void LoadFile(IFile f, PackageView owner = null)
     {
+      if(Loader == null) return;
       var pkgView = await Loader(f);
       if(owner != null && pkgView != null)
       {
