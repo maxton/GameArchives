@@ -27,7 +27,7 @@ namespace GameArchives.PFS
   /// <summary>
   /// Represents a PFS image.
   /// </summary>
-  class PFSPackage : AbstractPackage
+  public class PFSPackage : AbstractPackage
   {
     /// <summary>
     /// Set this to your ekpfs before loading a PKG
