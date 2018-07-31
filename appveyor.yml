@@ -14,6 +14,7 @@ after_build:
    %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\ArchiveExplorer.exe 
    %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\GameArchives.dll
    %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\GameArchives.xml
+   %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\LibArchiveExplorer.dll
    %APPVEYOR_BUILD_FOLDER%\ArchiveExplorer\bin\Release\LICENSE
    %APPVEYOR_BUILD_FOLDER%\README.md
    
