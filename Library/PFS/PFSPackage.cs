@@ -18,6 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
@@ -28,14 +29,18 @@ namespace GameArchives.PFS
   /// </summary>
   class PFSPackage : AbstractPackage
   {
+    /// <summary>
+    /// Set this to your ekpfs before loading a PKG
+    /// </summary>
+    public static byte[] ekpfs = new byte[32];
     private const long PfsMagic = 20130315;
+    private const string PkgMagic = "\u007fCNT";
 
-    private long SectorLength = 0x10000;
     private PFS_HDR header;
-    private DinodeD32[] dinodes;
-    private Dirent[] dirents;
+    private inode[] dinodes;
 
-    private readonly Stream _stream;
+    private Stream _stream;
+    private readonly Stream _originalStream;
     private readonly string _filename;
     private IDirectory _root;
 
@@ -51,6 +56,9 @@ namespace GameArchives.PFS
       {
         if (s.ReadInt64LE() == 1 && s.ReadInt64LE() == PfsMagic)
           return PackageTestResult.YES;
+        s.Position = 0;
+        if (s.ReadASCIINullTerminated(4) == PkgMagic)
+          return PackageTestResult.MAYBE;
         return PackageTestResult.NO;
       }
     }
@@ -63,8 +71,20 @@ namespace GameArchives.PFS
     private PFSPackage(IFile f)
     {
       this._filename = f.Name;
-      _stream = f.GetStream();
+      _originalStream = f.GetStream();
+      _stream = _originalStream;
       ParsePfs();
+    }
+
+    public static byte[] PfsGenCryptoKey(byte[] ekpfs, byte[] seed, uint index)
+    {
+      byte[] d = new byte[4 + seed.Length];
+      Array.Copy(BitConverter.GetBytes(index), d, 4);
+      Array.Copy(seed, 0, d, 4, seed.Length);
+      using (var hmac = new System.Security.Cryptography.HMACSHA256(ekpfs))
+      {
+        return hmac.ComputeHash(d);
+      }
     }
 
     private struct PFS_HDR
@@ -85,29 +105,40 @@ namespace GameArchives.PFS
       public long ndblock;
       public long dinodeBlockCount;
       public long superroot_ino;
-      public int unk9;
-      public int someOffset;
-      public long unk10;
-      public long dinodeBlockSize;
-      //public long unks [9];
-      public long dinodeBlockCount2;
-      //public long unks2 [4];
     };
-
-    private class DinodeD32
+    private abstract class inode
     {
       public ushort mode;
       public ushort nlink;
-      public uint  flags;
-      public long  size;
+      public uint flags;
+      public long size;
       //uchar unk1 [56];
       public uint uid;
       public uint gid;
       //uint64 unk2 [2];
       public uint blocks;
+      public abstract IList<int> direct_blocks { get; }
+      public abstract IList<int> indirect_blocks { get; }
+    };
+    private class DinodeD32 : inode
+    {
       public int[] db;
-      //uint32 db [12];
-      //uint32 ib [5];
+      public int[] ib;
+
+      public override IList<int> direct_blocks => db;
+      public override IList<int> indirect_blocks => ib;
+    };
+    private struct block_sig
+    {
+      public byte[] sig;
+      public int block;
+    }
+    private class DinodeS32 : inode
+    {
+      public block_sig[] db;
+      public block_sig[] ib;
+      public override IList<int> direct_blocks => db.Select(d => d.block).ToList();
+      public override IList<int> indirect_blocks => ib.Select(d => d.block).ToList();
     };
 
     private class Dirent {
@@ -117,10 +148,30 @@ namespace GameArchives.PFS
       public uint entsize;
       public string name;
     }
-
-
-  private PFS_HDR readPfsHdr()
+    
+    private PFS_HDR readPfsHdr()
     {
+      if(_stream.ReadASCIINullTerminated(4) == PkgMagic)
+      {
+        _stream.Position = 0x410;
+        var pfsOffset = _stream.ReadInt64BE();
+        var pfsSize = _stream.ReadInt64BE();
+        _stream.Position = 0x370 + pfsOffset;
+        var cryptSeed = _stream.ReadBytes(16);
+        var cryptSeedTotal = cryptSeed.Sum(x => x);
+        _stream = new Common.OffsetStream(_stream, pfsOffset, pfsSize);
+        if (cryptSeed.Sum(x => x) != 0)
+        {
+          // TODO: request ekpfs from user?
+          var keys = PfsGenCryptoKey(ekpfs, cryptSeed, 1);
+          var data_key = new byte[16];
+          var tweak_key = new byte[16];
+          Buffer.BlockCopy(keys, 0, tweak_key, 0, 16);
+          Buffer.BlockCopy(keys, 16, data_key, 0, 16);
+          _stream = new XtsCryptStream(_stream, data_key, tweak_key, 16, 0x1000);
+        }
+      }
+      _stream.Position = 0;
       return new PFS_HDR()
       {
         version = _stream.ReadInt64LE(),
@@ -152,6 +203,7 @@ namespace GameArchives.PFS
         size = _stream.ReadInt64LE(),
         db = new int[12]
       };
+      // TODO: times
       _stream.Seek(56, SeekOrigin.Current);
       ret.uid = _stream.ReadUInt32LE();
       ret.gid = _stream.ReadUInt32LE();
@@ -162,6 +214,36 @@ namespace GameArchives.PFS
         ret.db[i] = _stream.ReadInt32LE();
       }
       _stream.Seek(20, SeekOrigin.Current);
+      return ret;
+    }
+
+    private DinodeS32 readDinodeS32()
+    {
+      var ret = new DinodeS32()
+      {
+        mode = _stream.ReadUInt16LE(),
+        nlink = _stream.ReadUInt16LE(),
+        flags = _stream.ReadUInt32LE(),
+        size = _stream.ReadInt64LE(),
+        db = new block_sig[12],
+        ib = new block_sig[5],
+      };
+      // TODO: times
+      _stream.Seek(56, SeekOrigin.Current);
+      ret.uid = _stream.ReadUInt32LE();
+      ret.gid = _stream.ReadUInt32LE();
+      _stream.Seek(16, SeekOrigin.Current);
+      ret.blocks = _stream.ReadUInt32LE();
+      for (var i = 0; i < 12; i++)
+      {
+        ret.db[i].sig = _stream.ReadBytes(32);
+        ret.db[i].block = _stream.ReadInt32LE();
+      }
+      for (var i = 0; i < 5; i++)
+      {
+        ret.ib[i].sig = _stream.ReadBytes(32);
+        ret.ib[i].block = _stream.ReadInt32LE();
+      }
       return ret;
     }
 
@@ -183,15 +265,28 @@ namespace GameArchives.PFS
     {
       _stream.Seek(0, SeekOrigin.Begin);
       header = readPfsHdr();
-      dinodes = new DinodeD32[header.dinodeCount];
+      Func<inode> dinodeReader;
+      int dinodeSize;
+      if ((header.mode & 1) == 1)
+      {
+        dinodes = new DinodeS32[header.dinodeCount];
+        dinodeReader = readDinodeS32;
+        dinodeSize = 0x2C8;
+      }
+      else
+      {
+        dinodes = new DinodeD32[header.dinodeCount];
+        dinodeReader = readDinodeD32;
+        dinodeSize = 0xA8;
+      }
       var total = 0;
 
-      var maxPerSector = header.blocksz / 0xA8;
+      var maxPerSector = header.blocksz / dinodeSize;
       for (var i = 0; i < header.dinodeBlockCount; i++)
       {
         _stream.Position = header.blocksz + header.blocksz * i;
         for (var j = 0; j < maxPerSector && total < header.dinodeCount; j++)
-          dinodes[total++] = readDinodeD32();
+          dinodes[total++] = dinodeReader();
       }
 
       var dir = parseDirectory(0, null, "");
@@ -210,16 +305,16 @@ namespace GameArchives.PFS
       // TODO: In the future, if it turns out (in)direct blocks are used,
       //       extract this to a method and use it for both files and dirs.
       IList<int> dataBlocks;
-      if (dinodes[dinode].db[1] == -1)
+      if (dinodes[dinode].direct_blocks[1] == -1)
       {
         // PFS uses -1 to indicate that consecutive blocks are used.
         dataBlocks = new int[dinodes[dinode].blocks];
         for (var i = 0; i < dataBlocks.Count; i++)
-          dataBlocks[i] = i + dinodes[dinode].db[0];
+          dataBlocks[i] = i + dinodes[dinode].direct_blocks[0];
       }
       else
       {
-        dataBlocks = dinodes[dinode].db;
+        dataBlocks = dinodes[dinode].direct_blocks;
         //TODO: Indirect blocks. I haven't seen these yet, maybe they would be
         //      used if PFS is used for saves or something?
       }
@@ -250,12 +345,12 @@ namespace GameArchives.PFS
 
     private PFSFile parseFile(long dinode, PFSDirectory parent, string name)
     {
-      return new PFSFile(name, parent, _stream, dinodes[dinode].db[0] * (long)header.blocksz, dinodes[dinode].size, dinode);
+      return new PFSFile(name, parent, _stream, dinodes[dinode].direct_blocks[0] * (long)header.blocksz, dinodes[dinode].size, dinode);
     }
 
     public override void Dispose()
     {
-      _stream.Dispose();
+      _originalStream.Dispose();
     }
   }
 }

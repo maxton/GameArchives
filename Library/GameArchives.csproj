@@ -71,6 +71,8 @@
     <Compile Include="PFS\PFSDirectory.cs" />
     <Compile Include="PFS\PFSFile.cs" />
     <Compile Include="PFS\PFSPackage.cs" />
+    <Compile Include="PFS\Pkg.cs" />
+    <Compile Include="PFS\XtsCryptStream.cs" />
     <Compile Include="PKF\PKFDirectory.cs" />
     <Compile Include="PKF\PKFFile.cs" />
     <Compile Include="PKF\PKFPackage.cs" />
