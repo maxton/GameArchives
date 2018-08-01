@@ -68,6 +68,7 @@
     <Compile Include="FSGIMG\FSGIMGDirectory.cs" />
     <Compile Include="FSGIMG\FSGIMGPackage.cs" />
     <Compile Include="PackageType.cs" />
+    <Compile Include="PFS\PFSCDecompressStream.cs" />
     <Compile Include="PFS\PFSDirectory.cs" />
     <Compile Include="PFS\PFSFile.cs" />
     <Compile Include="PFS\PFSPackage.cs" />
