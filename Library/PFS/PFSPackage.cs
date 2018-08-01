@@ -80,6 +80,34 @@ namespace GameArchives.PFS
       this._filename = f.Name;
       _originalStream = f.GetStream();
       _stream = _originalStream;
+      switch (_originalStream.ReadASCIINullTerminated(4))
+      {
+        case PkgMagic:
+          _stream.Position = 0x410;
+          var pfsOffset = _stream.ReadInt64BE();
+          var pfsSize = _stream.ReadInt64BE();
+          _stream.Position = 0x370 + pfsOffset;
+          var cryptSeed = _stream.ReadBytes(16);
+          var cryptSeedTotal = cryptSeed.Sum(x => x);
+          _stream = new Common.OffsetStream(_stream, pfsOffset, pfsSize);
+          if (cryptSeed.Sum(x => x) != 0)
+          {
+            // TODO: request ekpfs from user?
+            // Hopefully we can get the ekpfs derivation algorithm.
+            if (f.Parent.TryGetFile(f.Name + ".ekpfs", out var key))
+              ekpfs = key.GetBytes();
+            var keys = PfsGenCryptoKey(ekpfs, cryptSeed, 1);
+            var data_key = new byte[16];
+            var tweak_key = new byte[16];
+            Buffer.BlockCopy(keys, 0, tweak_key, 0, 16);
+            Buffer.BlockCopy(keys, 16, data_key, 0, 16);
+            _stream = new XtsCryptStream(_stream, data_key, tweak_key, 16, 0x1000);
+          }
+          break;
+        case PfsCMagic:
+          _stream = new PFSCDecompressStream(_stream);
+          break;
+      }
       ParsePfs();
     }
 
@@ -158,32 +186,6 @@ namespace GameArchives.PFS
     
     private PFS_HDR readPfsHdr()
     {
-      switch(_stream.ReadASCIINullTerminated(4))
-      {
-        case PkgMagic:
-          _stream.Position = 0x410;
-          var pfsOffset = _stream.ReadInt64BE();
-          var pfsSize = _stream.ReadInt64BE();
-          _stream.Position = 0x370 + pfsOffset;
-          var cryptSeed = _stream.ReadBytes(16);
-          var cryptSeedTotal = cryptSeed.Sum(x => x);
-          _stream = new Common.OffsetStream(_stream, pfsOffset, pfsSize);
-          if (cryptSeed.Sum(x => x) != 0)
-          {
-            // TODO: request ekpfs from user?
-            var keys = PfsGenCryptoKey(ekpfs, cryptSeed, 1);
-            var data_key = new byte[16];
-            var tweak_key = new byte[16];
-            Buffer.BlockCopy(keys, 0, tweak_key, 0, 16);
-            Buffer.BlockCopy(keys, 16, data_key, 0, 16);
-            _stream = new XtsCryptStream(_stream, data_key, tweak_key, 16, 0x1000);
-          }
-          break;
-        case PfsCMagic:
-          _stream = new PFSCDecompressStream(_stream);
-          break;
-      }
-      _stream.Position = 0;
       return new PFS_HDR()
       {
         version = _stream.ReadInt64LE(),
