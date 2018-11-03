@@ -55,6 +55,12 @@ namespace ArchiveExplorer
       }
     }
 
+    private string passcode_popup(string prompt)
+    {
+      var form = new KeyRequestForm(prompt);
+      return form.ShowDialog() == DialogResult.OK ? form.Passcode : "";
+    }
+
     /// <summary>
     /// Deal with a new file.
     /// </summary>
@@ -67,7 +73,7 @@ namespace ArchiveExplorer
       PackageView packageView = null;
       try
       {
-        var newPackage = await Task.Run(() => PackageReader.ReadPackageFromFile(file));
+        var newPackage = await Task.Run(() => PackageReader.ReadPackageFromFile(file, passcode_popup));
         packageView = new PackageView(newPackage, pm);
         packageView.OnRemoveTab += RemoveTab;
         newPage.Text = newPackage.FileName;

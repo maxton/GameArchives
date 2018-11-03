@@ -29,10 +29,6 @@ namespace GameArchives.PFS
   /// </summary>
   public class PFSPackage : AbstractPackage
   {
-    /// <summary>
-    /// Set this to your ekpfs before loading a PKG
-    /// </summary>
-    public static byte[] ekpfs = new byte[32];
     private const long PfsMagic = 20130315;
     private const string PkgMagic = "\u007fCNT";
     private const string PfsCMagic = "PFSC";
@@ -70,12 +66,12 @@ namespace GameArchives.PFS
       }
     }
 
-    public static PFSPackage OpenFile(IFile f)
+    public static PFSPackage OpenFile(IFile f, Func<string, string> passcode_cb)
     {
-      return new PFSPackage(f);
+      return new PFSPackage(f, passcode_cb);
     }
 
-    private PFSPackage(IFile f)
+    private PFSPackage(IFile f, Func<string, string> passcode_cb)
     {
       this._filename = f.Name;
       _originalStream = f.GetStream();
@@ -92,10 +88,7 @@ namespace GameArchives.PFS
           _stream = new Common.OffsetStream(_stream, pfsOffset, pfsSize);
           if (cryptSeed.Sum(x => x) != 0)
           {
-            // TODO: request ekpfs from user?
-            // Hopefully we can get the ekpfs derivation algorithm.
-            if (f.Parent.TryGetFile(f.Name + ".ekpfs", out var key))
-              ekpfs = key.GetBytes();
+            var ekpfs = passcode_cb("EKPFS").Select(c => (byte)c).ToArray();
             var keys = PfsGenCryptoKey(ekpfs, cryptSeed, 1);
             var data_key = new byte[16];
             var tweak_key = new byte[16];

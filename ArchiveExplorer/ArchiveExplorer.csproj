@@ -55,10 +55,19 @@
     <Compile Include="ArchiveExplorer.Designer.cs">
       <DependentUpon>ArchiveExplorer.cs</DependentUpon>
     </Compile>
+    <Compile Include="KeyRequestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KeyRequestForm.Designer.cs">
+      <DependentUpon>KeyRequestForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="ArchiveExplorer.resx">
       <DependentUpon>ArchiveExplorer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="KeyRequestForm.resx">
+      <DependentUpon>KeyRequestForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

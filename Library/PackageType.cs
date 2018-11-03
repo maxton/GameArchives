@@ -49,7 +49,16 @@ namespace GameArchives
     /// Given a file which is a valid package, opens it as this
     /// package type, returning the package instance.
     /// </summary>
-    public Func<IFile, AbstractPackage> Load { get; }
+    public Func<IFile, Func<string, string>, AbstractPackage> Load { get; }
+
+    PackageType(string name, string[] extensions,
+      Func<IFile, PackageTestResult> file, Func<IFile, Func<string, string>, AbstractPackage> load)
+    {
+      Name = name;
+      Extensions = extensions;
+      CheckFile = file;
+      Load = load;
+    }
 
     PackageType(string name, string[] extensions,
       Func<IFile, PackageTestResult> file, Func<IFile, AbstractPackage> load)
@@ -57,7 +66,7 @@ namespace GameArchives
       Name = name;
       Extensions = extensions;
       CheckFile = file;
-      Load = load;
+      Load = (f, req) => load(f);
     }
 
     public static readonly ICollection<PackageType> Types;

@@ -63,9 +63,13 @@ namespace GameArchives
     /// If the file is not of a supported format, throws an exception.
     /// </summary>
     /// <param name="file">An IFile referring to the archive package.</param>
+    /// <param name="passcode_cb">
+    ///   This callback will be called when a package is a likely match but needs a password/decryption
+    ///   key. It will be called with a request string, and should return the key.
+    /// </param>
     /// <returns>The package, if it could be opened.</returns>
     /// <exception cref="NotSupportedException">Thrown when an unsupported file type is given.</exception>
-    public static AbstractPackage ReadPackageFromFile(IFile file)
+    public static AbstractPackage ReadPackageFromFile(IFile file, Func<string,string> passcode_cb)
     {
       var possible = new List<PackageType>();
       foreach (PackageType t in PackageType.Types)
@@ -73,7 +77,7 @@ namespace GameArchives
         var result = t.CheckFile(file);
         if (result == PackageTestResult.YES)
         {
-          return t.Load(file);
+          return t.Load(file, passcode_cb);
         }
         else if(result == PackageTestResult.MAYBE)
         {
@@ -84,7 +88,7 @@ namespace GameArchives
       {
         try
         {
-          return t.Load(file);
+          return t.Load(file, passcode_cb);
         }
         catch(InvalidDataException)
         {
@@ -92,6 +96,17 @@ namespace GameArchives
         }
       }
       throw new NotSupportedException("Given file was not a supported archive format.");
+    }
+    /// <summary>
+    /// Reads a package using the given decryption key if necessary.
+    /// </summary>
+    public static AbstractPackage ReadPackageFromFile(IFile file, string key)
+    {
+      return ReadPackageFromFile(file, s => key);
+    }
+    public static AbstractPackage ReadPackageFromFile(IFile file)
+    {
+      return ReadPackageFromFile(file, s => throw new Exception("A passcode is needed to open this file"));
     }
     
     /// <summary>
