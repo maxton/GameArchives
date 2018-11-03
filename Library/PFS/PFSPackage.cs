@@ -102,6 +102,18 @@ namespace GameArchives.PFS
             Buffer.BlockCopy(keys, 0, tweak_key, 0, 16);
             Buffer.BlockCopy(keys, 16, data_key, 0, 16);
             _stream = new XtsCryptStream(_stream, data_key, tweak_key, 16, 0x1000);
+            _stream.Position = 0x10002;
+
+            // TODO: Better way to check that the passcode was valid?
+            // Check that root inode's nlink == 1
+            bool validData = _stream.ReadInt16LE() == 1;
+            // Check that root inode's flags include 0x20000
+            validData = validData && (_stream.ReadInt32LE() & 0x20000) == 0x20000;
+            if(!validData)
+            {
+              _originalStream.Close();
+              throw new InvalidDataException("Invalid EKPFS");
+            }
           }
           break;
         case PfsCMagic:
