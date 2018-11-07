@@ -84,9 +84,10 @@ namespace GameArchives.PFS
           var pfsSize = _stream.ReadInt64BE();
           _stream.Position = 0x370 + pfsOffset;
           var cryptSeed = _stream.ReadBytes(16);
-          var cryptSeedTotal = cryptSeed.Sum(x => x);
           _stream = new Common.OffsetStream(_stream, pfsOffset, pfsSize);
-          if (cryptSeed.Sum(x => x) != 0)
+          _stream.Position = 0x1C;
+          var modeByte = (byte)_stream.ReadByte();
+          if ((modeByte & 4) == 4)
           {
             var ekpfs = passcode_cb("EKPFS").Select(c => (byte)c).ToArray();
             var keys = PfsGenCryptoKey(ekpfs, cryptSeed, 1);
