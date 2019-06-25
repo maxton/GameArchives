@@ -227,9 +227,10 @@ namespace GameArchives.Ark
       {
         // Version 1,2: Here be file records. Skip 'em for now.
         uint numRecords = header.ReadUInt32LE();
-        header.Seek(numRecords * 20, SeekOrigin.Current);
+        header.Close();
         contentFileMeta = hdrFile.GetStream();
-        readFileTable(header, version, brokenv4);
+        contentFileMeta.Seek(8 + numRecords * 20, SeekOrigin.Begin);
+        readFileTable(contentFileMeta, version, brokenv4);
       }
     }
 

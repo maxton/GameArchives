@@ -10,6 +10,7 @@ You can get the most up-to-date release from [Appveyor](https://ci.appveyor.com/
 This format is used in many Harmonix games, including but not limited to:
 * Frequency
 * Amplitude (PS2/PS3 versions)
+* EyeToy: AntiGrav
 * Guitar Hero 1 - 2, Encore: Rocks the 80s
 * Rock Band 1 - 4, Lego, Green Day, Beatles, VR
 * Karaoke Revolution (untested)
