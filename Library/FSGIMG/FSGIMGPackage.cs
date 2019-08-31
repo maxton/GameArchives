@@ -64,7 +64,7 @@ namespace GameArchives.FSGIMG
       {
         int partNum = 1;
         IFile tmp;
-        while (f.Parent.TryGetFile(f.Name.Substring(0, f.Name.Length - 1) + partNum, out tmp))
+        while (f.Parent.TryGetFile($"{f.Name.Substring(0, f.Name.Length - 3)}{partNum:d3}", out tmp))
         {
           var fs = tmp.GetStream();
           parts.Add(fs);
