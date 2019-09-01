@@ -32,6 +32,7 @@ The library will handle these files in addition to the combined DISC0.img.
 This format is used in some FreeStyleGames games, including:
 * DJ Hero 1,2
 * Guitar Hero Live
+* Sing Party
 
 This format may use compression.
 
