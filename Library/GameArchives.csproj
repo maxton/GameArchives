@@ -59,6 +59,7 @@
     <Compile Include="Common\OffsetFile.cs" />
     <Compile Include="Common\MultiStream.cs" />
     <Compile Include="Common\OffsetStream.cs" />
+    <Compile Include="FSAR\AesCryptStream.cs" />
     <Compile Include="Local\LocalDirectory.cs" />
     <Compile Include="Local\LocalFile.cs" />
     <Compile Include="PackageReader.cs" />

@@ -1,7 +1,7 @@
 ﻿/*
  * FSARPackage.cs
  * 
- * Copyright (c) 2015,2016, maxton. All rights reserved.
+ * Copyright (c) 2015,2016,2019 maxton. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,22 @@ namespace GameArchives.FSAR
 {
   public class FSARPackage : AbstractPackage
   {
+    const uint kFSAR = 0x46534152;
+    const uint kFSGC = 0x46534743;
     public static PackageTestResult IsFSAR(IFile f)
     {
       using (Stream s = f.GetStream())
       {
         s.Position = 0;
-        return s.ReadUInt32BE() == 0x46534152 ? PackageTestResult.YES : PackageTestResult.NO;
+        switch(s.ReadUInt32BE())
+        {
+          case kFSAR:
+            return PackageTestResult.YES;
+          case kFSGC:
+            return PackageTestResult.MAYBE;
+          default:
+            return PackageTestResult.NO;
+        }
       }
     }
 
@@ -53,6 +63,16 @@ namespace GameArchives.FSAR
 
     private Stream filestream;
     private FSARDirectory root;
+    private static byte[] fsgcKey = new byte[]
+    {
+      0x47, 0x3F, 0x2A, 0xD8, 0xCA, 0x3B, 0xBC, 0xF7,
+      0xAD, 0x71, 0x5D, 0xE7, 0x90, 0x96, 0x2E, 0xFE
+    };
+    private static byte[] fsgcCtr = new byte[]
+    {
+      0xE0, 0xAC, 0x52, 0x9C, 0x1B, 0x97, 0x3B, 0x27,
+      0x65, 0x89, 0x78, 0x46, 0x30, 0x82, 0x58, 0x3E,
+    };
 
     /// <summary>
     /// Open the .far archive which is the given file.
@@ -64,11 +84,12 @@ namespace GameArchives.FSAR
       root = new FSARDirectory(null, ROOT_DIR);
       filestream = f.GetStream();
       uint magic = filestream.ReadUInt32BE();
-      if(magic == 0x46534743) // "FSGC"
+      if(magic == kFSGC) // "FSGC"
       {
-        throw new NotSupportedException("File is encrypted (FSGC).");
+        filestream = new AesCtrStream(filestream, fsgcKey, fsgcCtr, 8, true);
+        magic = filestream.ReadUInt32BE();
       }
-      if (magic != 0x46534152) // "FSAR"
+      if (magic != kFSAR) // "FSAR"
       {
         throw new InvalidDataException("File does not have a valid FSAR header.");
       }
