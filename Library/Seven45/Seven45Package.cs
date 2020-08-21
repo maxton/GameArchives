@@ -9,9 +9,14 @@ namespace GameArchives.Seven45
   public class Seven45Package : AbstractPackage
   {
     // Ugly hack since I can't figure out IV generation
-    public static readonly byte[] header_iv_ps4 =
+    public static readonly byte[] header_iv_ps3 =
     {
       0x0A, 0x58, 0xB8, 0xDE, 0x0A, 0x71, 0x03, 0x44, 0x5C, 0x73, 0x71, 0x7F, 0xDA, 0xCE, 0x2B, 0x64
+    };
+
+    public static readonly byte[] iv_ps3_update =
+    {
+      0x58, 0x6B, 0x74, 0xAE, 0x0D, 0x58, 0x1E, 0x3C, 0x8B, 0xC1, 0xA7, 0x15, 0xBF, 0xE0, 0x25, 0x33
     };
 
     private Stream headerStream;
@@ -28,7 +33,11 @@ namespace GameArchives.Seven45
             if (s.ReadUInt32LE() == 0x745)
               return PackageTestResult.YES;
 
-          using (var s = new PowerChordCryptStream(stream, h_iv: header_iv_ps4))
+          using (var s = new PowerChordCryptStream(stream, h_iv: header_iv_ps3))
+            if (s.ReadUInt32LE() == 0x745)
+              return PackageTestResult.YES;
+
+          using (var s = new PowerChordCryptStream(stream, iv: iv_ps3_update))
             if (s.ReadUInt32LE() == 0x745)
               return PackageTestResult.YES;
         }
@@ -48,8 +57,14 @@ namespace GameArchives.Seven45
       headerStream = new PowerChordCryptStream(stream);
       if(headerStream.ReadInt32LE() != 0x745)
       {
-        headerStream = new PowerChordCryptStream(stream, h_iv: header_iv_ps4);
+        headerStream = new PowerChordCryptStream(stream, h_iv: header_iv_ps3);
+
+        if (headerStream.ReadInt32LE() != 0x745)
+        {
+          headerStream = new PowerChordCryptStream(stream, iv: iv_ps3_update);
+        }
       }
+
       root = new Common.DefaultDirectory(null, "/");
       ParseHeader(f);
     }
@@ -149,12 +164,11 @@ namespace GameArchives.Seven45
         dirEntries[i] = DirEntry.Read(headerStream);
       }
 
-      var stringTable = new string[header.num_files];
+      var stringTable = new List<string>(); // # of strings doesn't always match file count
       var stringTableEnd = header.string_table_offset + header.string_table_size;
-      var x = 0;
       while(headerStream.Position < stringTableEnd)
       {
-        stringTable[x++] = headerStream.ReadASCIINullTerminated();
+        stringTable.Add(headerStream.ReadASCIINullTerminated());
       }
 
       var fileOffsets = new OffsetEntry[header.num_offsets];
@@ -169,7 +183,7 @@ namespace GameArchives.Seven45
       for(var i = 1; i < dirs_flat.Length; i++)
       {
         var parent = dirs_flat[dirEntries[i].parent];
-        parent.AddDir(dirs_flat[i] = new Common.DefaultDirectory(parent, stringTable[dirEntries[i].string_num]));
+        parent.AddDir(dirs_flat[i] = new Common.DefaultDirectory(parent, stringTable[(int)dirEntries[i].string_num]));
       }
 
       contentFiles = new Stream[numDataFiles + 1];
@@ -182,7 +196,7 @@ namespace GameArchives.Seven45
       for (var i = 0; i < fileEntries.Length; i++)
       {
         var entry = fileEntries[i];
-        var name = entry.string_num < stringTable.Length ? stringTable[entry.string_num] : "ERROR_FILENAME";
+        var name = entry.string_num < stringTable.Count ? stringTable[(int)entry.string_num] : "ERROR_FILENAME";
         dirs_flat[entry.dir_num].AddFile(new Common.OffsetFile(
           name,
           dirs_flat[entry.dir_num],
