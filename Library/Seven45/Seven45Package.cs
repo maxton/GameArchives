@@ -8,17 +8,6 @@ namespace GameArchives.Seven45
 {
   public class Seven45Package : AbstractPackage
   {
-    // Ugly hack since I can't figure out IV generation
-    public static readonly byte[] header_iv_ps3 =
-    {
-      0x0A, 0x58, 0xB8, 0xDE, 0x0A, 0x71, 0x03, 0x44, 0x5C, 0x73, 0x71, 0x7F, 0xDA, 0xCE, 0x2B, 0x64
-    };
-
-    public static readonly byte[] iv_ps3_update =
-    {
-      0x58, 0x6B, 0x74, 0xAE, 0x0D, 0x58, 0x1E, 0x3C, 0x8B, 0xC1, 0xA7, 0x15, 0xBF, 0xE0, 0x25, 0x33
-    };
-
     private Stream headerStream;
     private Stream[] contentFiles;
     private Common.DefaultDirectory root;
@@ -30,14 +19,6 @@ namespace GameArchives.Seven45
         using (var stream = fn.GetStream())
         {
           using (var s = new PowerChordCryptStream(stream))
-            if (s.ReadUInt32LE() == 0x745)
-              return PackageTestResult.YES;
-
-          using (var s = new PowerChordCryptStream(stream, h_iv: header_iv_ps3))
-            if (s.ReadUInt32LE() == 0x745)
-              return PackageTestResult.YES;
-
-          using (var s = new PowerChordCryptStream(stream, iv: iv_ps3_update))
             if (s.ReadUInt32LE() == 0x745)
               return PackageTestResult.YES;
         }
@@ -55,16 +36,6 @@ namespace GameArchives.Seven45
       FileName = f.Name;
       var stream = f.GetStream();
       headerStream = new PowerChordCryptStream(stream);
-      if(headerStream.ReadInt32LE() != 0x745)
-      {
-        headerStream = new PowerChordCryptStream(stream, h_iv: header_iv_ps3);
-
-        if (headerStream.ReadInt32LE() != 0x745)
-        {
-          headerStream = new PowerChordCryptStream(stream, iv: iv_ps3_update);
-        }
-      }
-
       root = new Common.DefaultDirectory(null, "/");
       ParseHeader(f);
     }
@@ -197,12 +168,19 @@ namespace GameArchives.Seven45
       {
         var entry = fileEntries[i];
         var name = entry.string_num < stringTable.Count ? stringTable[(int)entry.string_num] : "ERROR_FILENAME";
+        bool encrypted = false;
+        if (name.EndsWith(".e.2"))
+        {
+          encrypted = true;
+          name = name.Remove(name.Length - 4);
+        }
         dirs_flat[entry.dir_num].AddFile(new Common.OffsetFile(
           name,
           dirs_flat[entry.dir_num],
           contentFiles[fileOffsets[entry.offset_num].pk_num],
           fileOffsets[entry.offset_num].pk_offset,
-          entry.size));
+          entry.size,
+          wrapStream: encrypted ? (s => new PowerChordCryptStream(s)) : (Func<Stream,Stream>)null));
       }
     }
 

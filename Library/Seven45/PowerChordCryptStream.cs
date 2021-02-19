@@ -9,20 +9,7 @@ namespace GameArchives.Seven45
 {
   public class PowerChordCryptStream : Stream
   {
-    private readonly byte[] header_key =
-    {
-      0xbb, 0xfd, 0xf6, 0xd3, 0x12, 0x98, 0x94, 0xf0,
-      0x5b, 0xd8, 0x62, 0xf7, 0xdb, 0x17, 0x5a, 0x51,
-      0x1f, 0x8a, 0xa8, 0x65, 0xd7, 0xb1, 0x85, 0x1d,
-      0x6a, 0x46, 0x2e, 0x00, 0x84, 0x70, 0xeb, 0xd6
-    };
-
-    private readonly byte[] header_iv =
-    {
-      0xa2, 0xae, 0x14, 0xb4, 0x35, 0x17, 0x72, 0xbe,
-      0x55, 0xcc, 0x48, 0x7b, 0xdf, 0xa0, 0x1b, 0xa6
-    };
-
+    const string header_password = "The corresponding .model file does not exist for '%s'";
 
     const int BLOCK_SIZE = 512;
     const long BLOCK_MASK = ~511L;
@@ -45,43 +32,38 @@ namespace GameArchives.Seven45
 
     public override long Position { get => position; set => Seek(value, SeekOrigin.Begin); }
 
-    public PowerChordCryptStream(Stream file, byte[] key = null, byte[] iv = null, byte[] h_iv = null)
+    public PowerChordCryptStream(Stream file)
     {
       if(file.Length < BLOCK_SIZE)
       {
         throw new Exception("File is not large enough to be .e.2 encrypted");
       }
-      if(h_iv != null)
-      {
-        Buffer.BlockCopy(h_iv, 0, header_iv, 0, 16);
-      }
+
       this.base_ = file;
       position = 0;
       aes = Aes.Create();
       aes.BlockSize = 128;
       aes.KeySize = 256;
       aes.Mode = CipherMode.CBC;
-      aes.Key = header_key;
-      aes.IV = header_iv;
+      using (SHA256 sha256 = SHA256.Create())
+      {
+        aes.Key = sha256.ComputeHash(Encoding.ASCII.GetBytes(header_password));
+      }
       base_.Seek(0, SeekOrigin.Begin);
       base_.Read(chunkBuffer, 0, BLOCK_SIZE);
+      var header_iv = new byte[16];
+      Buffer.BlockCopy(chunkBuffer, BLOCK_SIZE - 16, header_iv, 0, 16);
+      aes.IV = header_iv;
       using (var d = aes.CreateDecryptor(aes.Key, aes.IV))
       {
         d.TransformBlock(chunkBuffer, 0, BLOCK_SIZE + 16, chunkBuffer, 0);
       }
       Buffer.BlockCopy(chunkBuffer, 0, headerBlock, 0, BLOCK_SIZE);
-      if (iv == null) {
-        this.iv = new byte[16];
-        Buffer.BlockCopy(chunkBuffer, 0, this.iv, 0, 16);
-      } else {
-        this.iv = iv;
-      }
-      if(key == null) {
-        this.key = new byte[32];
-        Buffer.BlockCopy(chunkBuffer, 16, this.key, 0, 32);
-      } else {
-        this.key = key;
-      }
+      iv = new byte[16];
+      Buffer.BlockCopy(chunkBuffer, 0, iv, 0, 16);
+      key = new byte[32];
+      Buffer.BlockCopy(chunkBuffer, 16, key, 0, 32);
+
       Length = BitConverter.ToUInt32(chunkBuffer, 48);
       if(Length > file.Length)
       {

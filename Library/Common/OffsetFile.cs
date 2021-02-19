@@ -43,6 +43,7 @@ namespace GameArchives.Common
     private Stream img_file;
     private long data_offset;
     private const int BUFFER_SIZE = 8192;
+    private Func<Stream, Stream> wrapStream = null;
 
     /// <summary>
     /// Constructs a new OffsetFile
@@ -52,7 +53,7 @@ namespace GameArchives.Common
     /// <param name="img">Stream which contains this file</param>
     /// <param name="offset">Offset into the stream at which the file starts</param>
     /// <param name="size">Length in bytes of the file</param>
-    public OffsetFile(string name, IDirectory parent, Stream img, long offset, long size)
+    public OffsetFile(string name, IDirectory parent, Stream img, long offset, long size, Func<Stream,Stream> wrapStream = null)
     {
       Name = name;
       Parent = parent;
@@ -60,6 +61,7 @@ namespace GameArchives.Common
       img_file = img;
       data_offset = offset;
       ExtendedInfo = new Dictionary<string, object>();
+      this.wrapStream = wrapStream;
     }
 
     public byte[] GetBytes()
@@ -74,7 +76,12 @@ namespace GameArchives.Common
 
     public Stream GetStream()
     {
-      return new BufferedStream(new OffsetStream(img_file, data_offset, Size), BUFFER_SIZE);
+      var s = new BufferedStream(new OffsetStream(img_file, data_offset, Size), BUFFER_SIZE);
+      if (wrapStream != null)
+      {
+        return wrapStream(s);
+      }
+      return s;
     }
   }
 }
